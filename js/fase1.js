@@ -1,5 +1,13 @@
 /* fase1.js – Conciliación de feligresía y UF (Plantillas 1 y 2) */
-async function cargarP1(e) { try { S.f1.sec = await leerExcel(e.target.files[0], 'p1'); S.f1.vinc = {}; } catch (x) { alert(x.message); } render(); }
+async function cargarP1(e) {
+  try {
+    const rows = await leerExcel(e.target.files[0], 'p1'), cod = r => String(r.categoria).trim().toUpperCase();
+    const mal = rows.map((r, i) => [i + 2, cod(r)]).filter(([, c]) => !CATEGORIAS[c]);
+    if (mal.length) throw new Error(`Categoría no válida en ${mal.length} fila(s). Códigos permitidos: ${Object.keys(CATEGORIAS).join(', ')}. Primer caso: fila ≈ ${mal[0][0]} = "${mal[0][1]}".`);
+    S.f1.sec = rows.map(r => ({ ...r, categoria: cod(r) })); S.f1.vinc = {};
+  } catch (x) { alert(x.message); }
+  render();
+}
 async function cargarP2(e) { try { S.f1.ecl = await leerExcel(e.target.files[0], 'p2'); S.f1.vinc = {}; } catch (x) { alert(x.message); } render(); }
 
 const usados1 = () => new Set(Object.values(S.f1.vinc).flat());

@@ -19,6 +19,9 @@ const pc = n => (n || 0).toFixed(2) + '%';
 const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 const si = v => v === true || norm(v) === 'si';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+/** Categorías de miembro: en los archivos se capturan los CÓDIGOS; en pantallas y reportes se muestra la etiqueta completa. */
+const CATEGORIAS = { A: 'Adulto', JA: 'Joven', MYA: 'Niño/Adolescente' };
+const etiquetaCategoria = c => CATEGORIAS[String(c ?? '').trim().toUpperCase()] || String(c ?? '');
 const sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
 
 /** Asigna S[path] (numérico por defecto, texto si txt) y vuelve a renderizar. Crea objetos intermedios. */
@@ -37,7 +40,8 @@ const td = (v, cls = '') => `<td class="px-3 py-2 text-right font-mono ${cls}">$
 
 /* ---------- plantillas descargables (spec 3.2) ---------- */
 const PLANT = {
-  p1: { n: 'Secretaria', c: ['nombre_completo', 'categoria'], i: ['Nombre completo', 'Adulto | Joven | Niño/Adolescente'] },
+  p1: { n: 'Secretaria', c: ['nombre_completo', 'categoria'], i: ['Nombre completo', 'Código: ' + Object.entries(CATEGORIAS).map(([k, v]) => `${k} = ${v}`).join(' | ')],
+        ley: Object.entries(CATEGORIAS) },
   p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'marcador_uf', 'diezma', 'ofrenda', 'meses_diezmo', 'meses_ofrenda'], i: ['Nombre de la UF', 'Marcador de la UF', 'SI | NO', 'SI | NO', '0 a 12', '0 a 12'] },
   p3: { n: 'Ejecucion_Mensual', opc: ['ofrenda_bruta', 'porcentaje_ofrendas'],
         c: ['mes', 'diezmos', 'ofrenda_bruta', 'gastos', 'porcentaje_ofrendas', 'desglose_remesa_20', 'desglose_remesa_16', 'desglose_remesa_4', 'desglose_remesa_ofg', 'ingresos_directos'],
