@@ -37,7 +37,7 @@ const td = (v, cls = '') => `<td class="px-3 py-2 text-right font-mono ${cls}">$
 
 /* ---------- plantillas descargables (spec 3.2) ---------- */
 const PLANT = {
-  p1: { n: 'Secretaria', c: ['id_miembro', 'nombre_completo', 'categoria'], i: ['Identificador único', 'Nombre completo', 'Adulto | Joven | Niño/Adolescente'] },
+  p1: { n: 'Secretaria', c: ['nombre_completo', 'categoria'], i: ['Nombre completo', 'Adulto | Joven | Niño/Adolescente'] },
   p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'marcador_uf', 'diezma', 'ofrenda', 'meses_diezmo', 'meses_ofrenda'], i: ['Nombre de la UF', 'Marcador de la UF', 'SI | NO', 'SI | NO', '0 a 12', '0 a 12'] },
   p3: { n: 'Ejecucion_Mensual', opc: ['ofrenda_bruta', 'porcentaje_ofrendas'],
         c: ['mes', 'diezmos', 'ofrenda_bruta', 'gastos', 'porcentaje_ofrendas', 'desglose_remesa_20', 'desglose_remesa_16', 'desglose_remesa_4', 'desglose_remesa_ofg', 'ingresos_directos'],
