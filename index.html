@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente de Presupuesto Operativo Anual</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>tailwind.config={theme:{extend:{colors:{sda:{50:'#f0f7ff',600:'#0284c7',800:'#075985',900:'#0c4a6e'}}}}}</script>
+</head>
+<body class="h-full font-sans antialiased text-slate-800">
+
+<!-- LOGIN (ids requeridos por auth.js) -->
+<div id="view-login" class="flex min-h-full flex-col justify-center py-12 px-4 bg-slate-100">
+  <div class="mx-auto w-full max-w-md bg-white p-8 rounded-xl shadow-xl border border-slate-200">
+    <h2 class="text-center text-2xl font-bold text-sda-900">Presupuesto Operativo Anual</h2>
+    <p class="text-center text-sm text-slate-600 mb-6">Iglesia Adventista del Séptimo Día</p>
+    <div id="login-error" class="hidden mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
+      <h3 class="text-sm font-medium text-red-800">Acceso no autorizado</h3>
+      <div class="text-sm text-red-700">Tu correo no está en la lista de usuarios autorizados.</div>
+    </div>
+    <button onclick="loginWithGoogle()" class="w-full rounded-lg bg-white px-4 py-3 text-sm font-semibold ring-1 ring-slate-300 hover:bg-slate-50">Continuar con Google</button>
+  </div>
+</div>
+
+<!-- WIZARD -->
+<div id="view-wizard" class="hidden min-h-screen flex-col">
+  <header class="bg-sda-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <span class="font-bold text-lg">Presupuesto IASD</span>
+        <select id="select-iglesia-activa" onchange="cambiarIglesia(this.value)" class="bg-sda-800 text-sm rounded-lg px-3 py-1.5 border border-sda-600"></select><select id="select-anio" onchange="cambiarAnio()" title="Año a presupuestar" class="bg-sda-800 text-sm rounded-lg px-3 py-1.5 border border-sda-600"></select>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block"><div id="user-name" class="text-sm font-semibold">…</div><div id="user-role" class="text-xs text-amber-300"></div></div>
+        <button onclick="logout()" title="Cerrar sesión" class="px-3 py-2 rounded-lg bg-sda-800 hover:bg-red-600 text-sm">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-white border-b border-slate-200"><div class="max-w-7xl mx-auto px-4 py-3">
+    <ol id="stepper" class="space-y-2 md:flex md:space-x-6 md:space-y-0"></ol>
+  </div></div>
+
+  <main class="max-w-7xl w-full mx-auto px-4 py-6">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+        <div><h1 id="fase-titulo" class="text-2xl font-bold"></h1><p id="fase-descripcion" class="text-sm text-slate-500 mt-1"></p></div>
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs">Estado: <strong id="estado-lbl" class="text-amber-600">borrador</strong></span>
+      </div>
+      <div id="wizard-step-content" class="space-y-6"></div>
+      <div class="border-t border-slate-200 pt-5 mt-8 flex items-center justify-between">
+        <button id="btn-ant" onclick="faseAnterior()" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold ring-1 ring-slate-300 disabled:opacity-40">&larr; Anterior</button>
+        <div class="flex gap-3">
+          <span id="acciones-estado" class="flex gap-3"></span><button id="btn-guardar" onclick="guardarBorrador()" class="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold hover:bg-slate-200">Guardar borrador</button>
+          <button id="btn-sig" onclick="faseSiguiente()" class="rounded-lg bg-sda-900 px-5 py-2 text-sm font-semibold text-white hover:bg-sda-800">Siguiente Fase →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/fase1.js"></script>
+<script src="js/fase2.js"></script>
+<script src="js/fase3.js"></script>
+<script src="js/fase4.js"></script>
+<script src="js/fase5.js"></script>
+</body>
+</html>
