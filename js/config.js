@@ -3,7 +3,7 @@
  */
 
 // Reemplaza estas constantes con las credenciales de tu proyecto en Supabase
-const SUPABASE_URL = 'https://qkehbepwrqeapaexdcya.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://qkehbepwrqeapaexdcya.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_vEqR92tRAWqwWoUf8UDh0A_HRP7w-XU';
 
 // Inicialización del cliente global
