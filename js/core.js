@@ -45,9 +45,9 @@ const PLANT = {
   p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'meses_diezmo', 'meses_ofrenda'],
         i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'Meses del año con diezmo (0 a 12). Más de 0 = unidad diezmante', 'Meses del año con ofrenda (0 a 12). Más de 0 = unidad en dadivosidad'] },
   p3: { n: 'Ejecucion_Mensual',
-        c: ['mes', 'diezmos', 'gastos', 'remesa_40', 'remesa_ofg', 'ingresos_directos'],
+        c: ['mes', 'diezmos', 'gastos', 'remesa_40', 'ofg', 'ingresos_directos'],
         i: ['1 a 12 (o el nombre: Enero, Febrero…). Un renglón por mes, sin repetir', 'Diezmos del mes', 'Gastos locales del mes',
-            'Remesa del 40% del mes: suma de los conceptos 20%, 16% y 4% (sin OFG). El sistema calcula cada concepto por separado', 'Monto OFG del mes (no es porcentaje); 0 si no hubo', 'Ofrendas directas del mes'] },
+            'Remesa del 40% del mes sobre las ofrendas con nombre: suma de los conceptos 20%, 16% y 4% (sin OFG)', 'Ofrenda Global (OFG) del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
   p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al catálogo de Fase 3', '1 a 12', 'Descripción', 'Monto'] }
 };
 function descargarPlantilla(k) {
@@ -152,7 +152,7 @@ const cambiarIglesia = () => initWizard(), cambiarAnio = () => initWizard();
 function payloadCierre() {
   const c = calc5(), raw = S.f2.m, sb = S.f5.sb.d;
   const historico = calc2().m.map((r, i) => ({ mes: num(r.mes) || i + 1, diezmos: r.diez, remesa_20: r.r20, remesa_16: r.r16,
-    remesa_4: r.r4, remesa_ofg: r.ofg, ofrenda_100: r.o100, ofrenda_local_60: r.loc,
+    remesa_4: r.r4, remesa_ofg: r.ofg * 0.4, ofrenda_100: r.o100, ofrenda_local_60: r.loc,
     ingresos_directos: r.dir, ofrenda_60_mes: r.o60, gastos: r.gas, saldo_mensual: r.sal }));
   const departamentos = c.rows.map(r => { const s = sb[r.id] || {};
     return { departamento_id: r.id, porcentaje_asignado: r.pct, ingresos: r.ing, gasto: r.gasto, gastos_miscelaneos: r.misc, ingresos_directos: r.dir,
