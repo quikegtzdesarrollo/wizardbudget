@@ -28,7 +28,15 @@ async function cargarP1(e) {
   } catch (x) { alert(x.message); }
   tras1();
 }
-async function cargarP2(e) { try { S.f1.ecl = await leerExcel(e.target.files[0], 'p2'); TK.u = []; } catch (x) { alert(x.message); } tras1(); }
+async function cargarP2(e) {
+  try {
+    const rows = await leerExcel(e.target.files[0], 'p2');
+    const mal = rows.flatMap((r, i) => ['meses_diezmo', 'meses_ofrenda'].filter(c => r[c] !== '' && !(Number.isInteger(+r[c]) && +r[c] >= 0 && +r[c] <= 12)).map(c => `fila ≈ ${i + 2} (${c} = "${r[c]}")`));
+    if (mal.length) throw new Error(`Los meses deben ser enteros de 0 a 12. Hay ${mal.length} valor(es) no válido(s). Primer caso: ${mal[0]}.`);
+    S.f1.ecl = rows; TK.u = [];
+  } catch (x) { alert(x.message); }
+  tras1();
+}
 function tras1() { S.f1.pag = 0; autoAgrupar(); render(); }
 
 /* ---------- algoritmo de agrupación ---------- */
@@ -59,9 +67,10 @@ function derivar() {
 /** Resumen de conciliación (lo usan la Fase 1, la Sección 1 de la Fase 5 y el cierre) */
 function stats1() {
   const U = S.f1.ecl, { porUF, sin } = derivar(), n = S.f1.sec.length;
-  const m = (c, v) => U.filter(u => si(u[c === 'd' ? 'diezma' : 'ofrenda']) && num(u[c === 'd' ? 'meses_diezmo' : 'meses_ofrenda']) === v).length;
+  const md = u => num(u.meses_diezmo), mo = u => num(u.meses_ofrenda);       // Diezmante / dadivosidad = meses > 0 (se calcula, no se captura)
   return { miembros: n, vinc: n - sin, sinUF: sin, uf: U.length, visitas: porUF.filter(l => !l.length).length,
-    diez: U.filter(u => si(u.diezma)).length, dad: U.filter(u => si(u.ofrenda)).length, dMes: [12, 11, 10].map(v => m('d', v)), oMes: [12, 11, 10].map(v => m('o', v)) };
+    diez: U.filter(u => md(u) > 0).length, dad: U.filter(u => mo(u) > 0).length,
+    dMes: [12, 11, 10].map(v => U.filter(u => md(u) === v).length), oMes: [12, 11, 10].map(v => U.filter(u => mo(u) === v).length) };
 }
 
 /* ---------- acciones ---------- */
@@ -123,8 +132,8 @@ function vistaMiembros(d) {
 function vistaUF(d) {
   const { sec, ecl } = S.f1;
   const rows = ecl.map((u, i) => { const l = d.porUF[i];
-    return `<tr class="align-top"><td class="px-3 py-2 font-medium">${esc(u.nombre_uf)}</td><td class="px-3">${si(u.diezma) ? '✅' : '—'}</td><td class="px-3">${si(u.ofrenda) ? '✅' : '—'}</td>
+    return `<tr class="align-top"><td class="px-3 py-2 font-medium">${esc(u.nombre_uf)}</td><td class="px-3">${num(u.meses_diezmo) > 0 ? '✅ ' + num(u.meses_diezmo) + ' m' : '—'}</td><td class="px-3">${num(u.meses_ofrenda) > 0 ? '✅ ' + num(u.meses_ofrenda) + ' m' : '—'}</td>
     <td class="px-3 py-2">${l.map(j => `<span class="inline-flex gap-1 bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 mr-1 mb-1">${esc(sec[j].nombre_completo)}<button onclick="asignar(${j},'')" title="Quitar de la UF">×</button></span>`).join('')}</td>
     <td class="px-3 text-center">${l.length}</td><td class="px-3"><span class="px-2 py-0.5 rounded-full font-bold ${l.length ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${l.length ? 'Miembro' : 'Visita'}</span></td></tr>`; }).join('');
-  return `<p class="text-sm text-slate-500">Vista de consulta: para agregar miembros a una UF usa la pestaña «Por miembro».</p><div class="overflow-x-auto border border-slate-200 rounded-xl"><table class="min-w-full divide-y text-xs"><thead class="bg-slate-50 font-semibold text-left"><tr><th class="px-3 py-2">UF (ECLESIA 7)</th><th class="px-3">Diezma</th><th class="px-3">Ofrenda</th><th class="px-3">Miembros agrupados</th><th class="px-3"># Miembros</th><th class="px-3">Clasificación</th></tr></thead><tbody class="divide-y bg-white">${rows}</tbody></table></div>`;
+  return `<p class="text-sm text-slate-500">Vista de consulta: para agregar miembros a una UF usa la pestaña «Por miembro».</p><div class="overflow-x-auto border border-slate-200 rounded-xl"><table class="min-w-full divide-y text-xs"><thead class="bg-slate-50 font-semibold text-left"><tr><th class="px-3 py-2">UF (ECLESIA 7)</th><th class="px-3">Diezmo (meses)</th><th class="px-3">Ofrenda (meses)</th><th class="px-3">Miembros agrupados</th><th class="px-3"># Miembros</th><th class="px-3">Clasificación</th></tr></thead><tbody class="divide-y bg-white">${rows}</tbody></table></div>`;
 }

@@ -42,7 +42,8 @@ const td = (v, cls = '') => `<td class="px-3 py-2 text-right font-mono ${cls}">$
 const PLANT = {
   p1: { n: 'Secretaria', c: ['nombre_completo', 'categoria'], i: ['Nombre completo', 'Código: ' + Object.entries(CATEGORIAS).map(([k, v]) => `${k} = ${v}`).join(' | ')],
         ley: Object.entries(CATEGORIAS) },
-  p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'diezma', 'ofrenda', 'meses_diezmo', 'meses_ofrenda'], i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'SI | NO', 'SI | NO', '0 a 12', '0 a 12'] },
+  p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'meses_diezmo', 'meses_ofrenda'],
+        i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'Meses del año con diezmo (0 a 12). Más de 0 = unidad diezmante', 'Meses del año con ofrenda (0 a 12). Más de 0 = unidad en dadivosidad'] },
   p3: { n: 'Ejecucion_Mensual', opc: ['ofrenda_bruta', 'porcentaje_ofrendas'],
         c: ['mes', 'diezmos', 'ofrenda_bruta', 'gastos', 'porcentaje_ofrendas', 'desglose_remesa_20', 'desglose_remesa_16', 'desglose_remesa_4', 'desglose_remesa_ofg', 'ingresos_directos'],
         i: ['1 a 12', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Monto', 'Monto', 'Monto OFG (no es porcentaje); 0 si vacío', 'Monto'] },
