@@ -13,7 +13,7 @@ const S = {
 const S0 = structuredClone(S);   // estado inicial limpio (al cambiar de iglesia/año)
 /* ---------- utilidades ---------- */
 const $ = id => document.getElementById(id);
-const num = v => parseFloat(v) || 0;
+const num = v => typeof v === 'number' ? (v || 0) : (parseFloat(String(v ?? '').replace(/[$,\s]/g, '')) || 0);   // acepta '$1,234.50'
 const money = n => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n || 0);
 const pc = n => (n || 0).toFixed(2) + '%';
 const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -44,9 +44,10 @@ const PLANT = {
         ley: Object.entries(CATEGORIAS) },
   p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'meses_diezmo', 'meses_ofrenda'],
         i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'Meses del año con diezmo (0 a 12). Más de 0 = unidad diezmante', 'Meses del año con ofrenda (0 a 12). Más de 0 = unidad en dadivosidad'] },
-  p3: { n: 'Ejecucion_Mensual', opc: ['ofrenda_bruta', 'porcentaje_ofrendas'],
-        c: ['mes', 'diezmos', 'ofrenda_bruta', 'gastos', 'porcentaje_ofrendas', 'desglose_remesa_20', 'desglose_remesa_16', 'desglose_remesa_4', 'desglose_remesa_ofg', 'ingresos_directos'],
-        i: ['1 a 12', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Monto', 'Monto', 'Monto OFG (no es porcentaje); 0 si vacío', 'Monto'] },
+  p3: { n: 'Ejecucion_Mensual',
+        c: ['mes', 'diezmos', 'gastos', 'remesa_40', 'remesa_ofg', 'ingresos_directos'],
+        i: ['1 a 12 (o el nombre: Enero, Febrero…). Un renglón por mes, sin repetir', 'Diezmos del mes', 'Gastos locales del mes',
+            'Remesa del 40% del mes: suma de los conceptos 20%, 16% y 4% (sin OFG). El sistema calcula cada concepto por separado', 'Monto OFG del mes (no es porcentaje); 0 si no hubo', 'Ofrendas directas del mes'] },
   p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al catálogo de Fase 3', '1 a 12', 'Descripción', 'Monto'] }
 };
 function descargarPlantilla(k) {
@@ -150,8 +151,8 @@ const cambiarIglesia = () => initWizard(), cambiarAnio = () => initWizard();
 /* ---------- cierre: envía a Supabase los resultados calculados para validar y materializar ---------- */
 function payloadCierre() {
   const c = calc5(), raw = S.f2.m, sb = S.f5.sb.d;
-  const historico = calc2().m.map((r, i) => ({ mes: num(r.mes) || i + 1, diezmos: r.diez, remesa_20: num(raw[i].desglose_remesa_20), remesa_16: num(raw[i].desglose_remesa_16),
-    remesa_4: num(raw[i].desglose_remesa_4), remesa_ofg: num(raw[i].desglose_remesa_ofg), ofrenda_100: r.o100, ofrenda_local_60: r.loc,
+  const historico = calc2().m.map((r, i) => ({ mes: num(r.mes) || i + 1, diezmos: r.diez, remesa_20: r.r20, remesa_16: r.r16,
+    remesa_4: r.r4, remesa_ofg: r.ofg, ofrenda_100: r.o100, ofrenda_local_60: r.loc,
     ingresos_directos: r.dir, ofrenda_60_mes: r.o60, gastos: r.gas, saldo_mensual: r.sal }));
   const departamentos = c.rows.map(r => { const s = sb[r.id] || {};
     return { departamento_id: r.id, porcentaje_asignado: r.pct, ingresos: r.ing, gasto: r.gasto, gastos_miscelaneos: r.misc, ingresos_directos: r.dir,
