@@ -2,7 +2,7 @@
 function nuevoDep(id, nombre) { return { id, nombre, activo: true, pct: 0, gasto: 0, misc: 0, dir: 0, ent: 0, sal: 0 }; }
 const S = {
   fase: 1, aN: new Date().getFullYear() + 1, aN1: new Date().getFullYear(), pid: null, estado: 'borrador', iglesia: '',
-  f1: { sec: [], ecl: [], vinc: {} },            // vinc: {indiceUF: [indiceMiembro,...]}
+  f1: { sec: [], ecl: [], asig: {}, origen: {}, vista: 'miembros', q: '', soloSin: false, pag: 0 },            // vinc: {indiceUF: [indiceMiembro,...]}
   f2: { m: [] },
   f3: { deps: ['Ministerio de la Juventud', 'Ministerio Infantil y del Adolescente', 'Escuela Sabática', 'Mayordomía Cristiana',
                'Ministerio de la Mujer', 'Evangelismo y Misión Global', 'Servicios e Infraestructura'].map((n, i) => nuevoDep('dep-' + (i + 1), n)) },
@@ -42,7 +42,7 @@ const td = (v, cls = '') => `<td class="px-3 py-2 text-right font-mono ${cls}">$
 const PLANT = {
   p1: { n: 'Secretaria', c: ['nombre_completo', 'categoria'], i: ['Nombre completo', 'Código: ' + Object.entries(CATEGORIAS).map(([k, v]) => `${k} = ${v}`).join(' | ')],
         ley: Object.entries(CATEGORIAS) },
-  p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'marcador_uf', 'diezma', 'ofrenda', 'meses_diezmo', 'meses_ofrenda'], i: ['Nombre de la UF', 'Marcador de la UF', 'SI | NO', 'SI | NO', '0 a 12', '0 a 12'] },
+  p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'diezma', 'ofrenda', 'meses_diezmo', 'meses_ofrenda'], i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'SI | NO', 'SI | NO', '0 a 12', '0 a 12'] },
   p3: { n: 'Ejecucion_Mensual', opc: ['ofrenda_bruta', 'porcentaje_ofrendas'],
         c: ['mes', 'diezmos', 'ofrenda_bruta', 'gastos', 'porcentaje_ofrendas', 'desglose_remesa_20', 'desglose_remesa_16', 'desglose_remesa_4', 'desglose_remesa_ofg', 'ingresos_directos'],
         i: ['1 a 12', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Opcional (por confirmar)', 'Monto', 'Monto', 'Monto', 'Monto OFG (no es porcentaje); 0 si vacío', 'Monto'] },
@@ -140,6 +140,7 @@ async function initWizard() {
     if (error) throw error;
     if (data) Object.assign(S, data.datos, { pid: data.id, estado: data.estado, fase: data.fase_actual, aN1: data.anio_evaluado, aN: data.anio_presupuestado, iglesia: ig });
     await cargarCatalogo(ig);
+    await cargarMemoriaUF(ig);
   } catch (e) { console.error(e); alert('No se pudo cargar la información: ' + e.message); }
   render();
 }
