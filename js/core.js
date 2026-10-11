@@ -45,15 +45,20 @@ const PLANT = {
   p2: { n: 'ECLESIA7_UF', c: ['nombre_uf', 'meses_diezmo', 'meses_ofrenda'],
         i: ['Nombre de la UF (una persona o un grupo, p. ej. un matrimonio)', 'Meses del año con diezmo (0 a 12). Más de 0 = unidad diezmante', 'Meses del año con ofrenda (0 a 12). Más de 0 = unidad en dadivosidad'] },
   p3: { n: 'Ejecucion_Mensual',
-        c: ['mes', 'diezmos', 'gastos', 'remesa_40', 'ofg', 'ingresos_directos'],
+        c: ['mes', 'diezmos', 'gastos', 'remesa_40', 'ofrenda_global', 'ingresos_directos'],
         i: ['1 a 12 (o el nombre: Enero, Febrero…). Un renglón por mes, sin repetir', 'Diezmos del mes', 'Gastos locales del mes',
-            'Remesa del 40% del mes sobre las ofrendas con nombre: suma de los conceptos 20%, 16% y 4% (sin OFG)', 'Ofrenda Global (OFG) del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
+            'Remesa del 40% del mes sobre las ofrendas con nombre: suma de los conceptos 20%, 16% y 4% (sin Ofrenda Global)', 'Ofrenda Global del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
   p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al catálogo de Fase 3', '1 a 12', 'Descripción', 'Monto'] }
 };
 function descargarPlantilla(k) {
   const p = PLANT[k], wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([p.c]), 'Plantilla');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Columna', 'Formato / valores permitidos'], ...p.c.map((c, i) => [c, p.i[i]])]), 'Instrucciones');
+  const filas = [['Columna', 'Formato / valores permitidos'], ...p.c.map((c, i) => [c, p.i[i]]), ...(p.ley ? [[], ['Código de categoría', 'Significado'], ...p.ley] : [])];
+  const ws = XLSX.utils.aoa_to_sheet(filas), negrita = { font: { bold: true } };
+  const titulos = new Set([0, ...(p.ley ? [p.c.length + 2] : [])]);               // filas de encabezado de cada tabla
+  filas.forEach((f, i) => f.forEach((_, j) => { const c = ws[XLSX.utils.encode_cell({ r: i, c: j })]; if (c && (titulos.has(i) || j === 0)) c.s = negrita; }));   // encabezados y nombres de columna en negritas
+  ws['!cols'] = [{ wch: 28 }, { wch: 95 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Instrucciones');
   XLSX.writeFile(wb, `Plantilla_${p.n}.xlsx`);
 }
 /** Lee un archivo y valida que traiga las columnas de la plantilla antes de procesarlo. */
