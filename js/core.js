@@ -4,8 +4,7 @@ const S = {
   fase: 1, aN: new Date().getFullYear() + 1, aN1: new Date().getFullYear(), pid: null, estado: 'borrador', iglesia: '',
   f1: { sec: [], ecl: [], asig: {}, origen: {}, vista: 'miembros', q: '', soloSin: false, pag: 0 },            // vinc: {indiceUF: [indiceMiembro,...]}
   f2: { m: [] },
-  f3: { deps: ['Ministerio de la Juventud', 'Ministerio Infantil y del Adolescente', 'Escuela Sabática', 'Mayordomía Cristiana',
-               'Ministerio de la Mujer', 'Evangelismo y Misión Global', 'Servicios e Infraestructura'].map((n, i) => nuevoDep('dep-' + (i + 1), n)) },
+  f3: { deps: [] },   // sin catálogo: los departamentos vienen de la Plantilla 5 (Fase 3)
   f4: { infl: 5, crec: 0, acts: [], ap: {} },    // ap: {depId: {v, c}}
   f5: { dig: { dn: 0, on: 0, af: 0, ad: 0 }, pct: {}, sb: { base: 0, fecha: '', d: {} } }
 };
@@ -18,6 +17,7 @@ const money = n => new Intl.NumberFormat('es-MX', { style: 'currency', currency:
 const pc = n => (n || 0).toFixed(2) + '%';
 const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 const si = v => v === true || norm(v) === 'si';
+const idDep = n => 'd:' + norm(n);                       // id estable del departamento = su nombre normalizado (no hay catálogo)
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** Categorías de miembro: en los archivos se capturan los CÓDIGOS; en pantallas y reportes se muestra la etiqueta completa. */
 const CATEGORIAS = { A: 'Adulto', JA: 'Joven', MYA: 'Niño/Adolescente' };
@@ -48,16 +48,16 @@ const PLANT = {
         c: ['mes', 'diezmos', 'gastos', 'ofrenda_uf', 'ofrenda_global', 'ingresos_directos'],
         i: ['1 a 12 (o el nombre: Enero, Febrero…). Un renglón por mes, sin repetir', 'Diezmos del mes', 'Gastos locales del mes',
             'Ofrenda UF: total de la ofrenda (100%) que depositaron en el mes los diezmantes o unidades financieras (sin la Ofrenda Global ni los ingresos directos)', 'Ofrenda Global del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
-  p5: { n: 'Presupuesto_Departamentos', opc: ['departamento'],
+  p5: { n: 'Presupuesto_Departamentos',
         c: ['departamento', 'porcentaje_asignado', 'gasto', 'miscelaneos', 'transferencias_entrada', 'transferencias_salida'],
-        i: ['COLUMNA DE CONTROL (no se usa para cargar): nombre del departamento tal como aparece en la pantalla', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
+        i: ['Nombre del departamento (se carga tal cual; no se guarda un catálogo). Un renglón por departamento, sin repetir', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
             'Gastos misceláneos del departamento', 'Transferencias que RECIBE de otros departamentos', 'Transferencias que ENVÍA a otros departamentos'],
-        nota: 'LOS DATOS SE CARGAN POR ORDEN DE FILA, NO POR NOMBRE: la fila 1 del archivo corresponde al primer departamento activo de la pantalla, la fila 2 al segundo, y así sucesivamente. No cambies el orden de las filas. La columna «departamento» es solo de control para que verifiques el orden; esta plantilla se descarga ya con los departamentos activos en el orden actual de la pantalla. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
-  p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al catálogo de Fase 3', '1 a 12', 'Descripción', 'Monto'] }
+        nota: 'CARGA TODOS LOS DEPARTAMENTOS ACTUALES de la iglesia. Si en el nuevo año habrá un departamento nuevo, inclúyelo también, aunque sea con ceros, porque no tuvo presupuesto ni movimientos en el año actual. Los nombres se cargan desde la columna «departamento» y de ahí pasan a la Fase 4 para los ajustes. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
+  p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al del departamento en la Fase 3', '1 a 12', 'Descripción', 'Monto'] }
 };
 function descargarPlantilla(k) {
   const p = PLANT[k], wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(k === 'p5' ? [p.c, ...S.f3.deps.filter(d => d.activo).map(d => [d.nombre])] : [p.c]), 'Plantilla');   // p5 se precarga con los departamentos en el orden de la pantalla
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([p.c]), 'Plantilla');
   const filas = [['Columna', 'Formato / valores permitidos'], ...p.c.map((c, i) => [c, p.i[i]]), ...(p.ley ? [[], ['Código de categoría', 'Significado'], ...p.ley] : []), ...(p.nota ? [[], ['IMPORTANTE', p.nota]] : [])];
   const ws = XLSX.utils.aoa_to_sheet(filas), negrita = { font: { bold: true } };
   const titulos = new Set([0, ...(p.ley ? [p.c.length + 2] : [])]);               // filas de encabezado de cada tabla
@@ -74,7 +74,7 @@ async function leerExcel(f, k) {
   const h = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(x => String(x).trim()), p = PLANT[k];
   const falt = p.c.filter(c => !h.includes(c) && !(p.opc || []).includes(c));
   if (falt.length) throw new Error('El archivo no coincide con la plantilla. Faltan columnas: ' + falt.join(', '));
-  return XLSX.utils.sheet_to_json(ws, { defval: '', blankrows: k === 'p5' });
+  return XLSX.utils.sheet_to_json(ws, { defval: '' });
 }
 const zona = (k, fn, ok, titulo) => `<div class="border-2 border-dashed ${ok ? 'border-emerald-400 bg-emerald-50/40' : 'border-slate-300'} rounded-lg p-4">
   <div class="font-semibold text-sm">${titulo}</div>
@@ -137,11 +137,9 @@ async function guardarBorrador(silencioso) {
     S.pid = data; if (!silencioso) alert('Borrador guardado.'); return true;
   } catch (e) { console.error(e); alert('No se pudo guardar: ' + (e.code === '23505' ? 'ya existe un presupuesto para ese año.' : e.message)); return false; }
 }
-async function cargarCatalogo(ig) {      // catálogo real de departamentos (UUID) + valores capturados por id
-  const { data, error } = await supabaseClient.from('departamentos').select('id,nombre,activo').eq('iglesia_id', ig).order('orden').order('nombre');
-  if (error) throw error;
-  const prev = Object.fromEntries(S.f3.deps.map(d => [d.id, d]));
-  S.f3.deps = data.map(d => ({ ...nuevoDep(d.id, d.nombre), ...(prev[d.id] || {}), nombre: d.nombre, activo: d.activo }));
+/** Compatibilidad: los borradores anteriores traían departamentos del catálogo eliminado (ids de base de datos). Se descartan TODOS: la Fase 3 debe iniciar vacía y los departamentos se cargan desde el archivo. */
+function migrarDeps() {
+  S.f3.deps = (S.f3.deps || []).filter(d => String(d.id).startsWith('d:'));
 }
 async function initWizard() {
   const sa = $('select-anio'), y = new Date().getFullYear();
@@ -152,7 +150,7 @@ async function initWizard() {
     const { data, error } = await supabaseClient.rpc('cargar_borrador', { p_iglesia: ig, p_anio: a });
     if (error) throw error;
     if (data) Object.assign(S, data.datos, { pid: data.id, estado: data.estado, fase: data.fase_actual, aN1: data.anio_evaluado, aN: data.anio_presupuestado, iglesia: ig });
-    await cargarCatalogo(ig);
+    migrarDeps();
     await cargarMemoriaUF(ig);
   } catch (e) { console.error(e); alert('No se pudo cargar la información: ' + e.message); }
   render();
@@ -166,7 +164,7 @@ function payloadCierre() {
     remesa_4: r.uf * 0.04, remesa_ofg: r.ofg * 0.4, ofrenda_100: r.o100, ofrenda_local_60: r.loc,
     ingresos_directos: r.dir, ofrenda_60_mes: r.o60, gastos: r.gas, saldo_mensual: r.sal }));
   const departamentos = c.rows.map(r => { const s = sb[r.id] || {};
-    return { departamento_id: r.id, porcentaje_asignado: r.pct, ingresos: r.ing, gasto: r.gasto, gastos_miscelaneos: r.misc, ingresos_directos: r.dir,
+    return { departamento: r.nombre, orden: r.i, porcentaje_asignado: r.pct, ingresos: r.ing, gasto: r.gasto, gastos_miscelaneos: r.misc, ingresos_directos: r.dir,
       transf_entrantes: r.ent, transf_salientes: r.sal, saldo_final: r.sf, gasto_estimado: r.est, limite_indexado: r.lim, monto_aprobado: r.ap, comentario: r.com,
       porcentaje_concilio: r.pctC, gasto_por_porcentaje: r.gpp, saldo_corte: s.c || 0, ajustes: s.a || 0, porcentaje_junta: s.j || 0,
       saldo_aprobado_junta: S.f5.sb.base * (s.j || 0) / 100 }; });
