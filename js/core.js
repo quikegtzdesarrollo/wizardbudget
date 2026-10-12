@@ -53,7 +53,7 @@ const PLANT = {
         i: ['Nombre del departamento (se carga tal cual; no se guarda un catálogo). Un renglón por departamento, sin repetir', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
             'Gastos misceláneos del departamento', 'Transferencias que RECIBE de otros departamentos', 'Transferencias que ENVÍA a otros departamentos'],
         nota: 'CARGA TODOS LOS DEPARTAMENTOS ACTUALES de la iglesia. Si en el nuevo año habrá un departamento nuevo, inclúyelo también, aunque sea con ceros, porque no tuvo presupuesto ni movimientos en el año actual. Los nombres se cargan desde la columna «departamento» y de ahí pasan a la Fase 4 para los ajustes. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
-  p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al del departamento en la Fase 3', '1 a 12', 'Descripción', 'Monto'] }
+  p4: { n: 'Actividades_Departamento', c: ['departamento', 'actividad', 'importe'], i: ['Nombre igual al del departamento en la Fase 3', 'Descripción de la actividad', 'Monto estimado de la actividad'] }
 };
 function descargarPlantilla(k) {
   const p = PLANT[k], wb = XLSX.utils.book_new();
