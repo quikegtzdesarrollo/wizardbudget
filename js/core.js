@@ -48,15 +48,21 @@ const PLANT = {
         c: ['mes', 'diezmos', 'gastos', 'ofrenda_uf', 'ofrenda_global', 'ingresos_directos'],
         i: ['1 a 12 (o el nombre: Enero, Febrero…). Un renglón por mes, sin repetir', 'Diezmos del mes', 'Gastos locales del mes',
             'Ofrenda UF: total de la ofrenda (100%) que depositaron en el mes los diezmantes o unidades financieras (sin la Ofrenda Global ni los ingresos directos)', 'Ofrenda Global del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
+  p5: { n: 'Presupuesto_Departamentos', opc: ['departamento'],
+        c: ['departamento', 'porcentaje_asignado', 'gasto', 'miscelaneos', 'transferencias_entrada', 'transferencias_salida'],
+        i: ['COLUMNA DE CONTROL (no se usa para cargar): nombre del departamento tal como aparece en la pantalla', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
+            'Gastos misceláneos del departamento', 'Transferencias que RECIBE de otros departamentos', 'Transferencias que ENVÍA a otros departamentos'],
+        nota: 'LOS DATOS SE CARGAN POR ORDEN DE FILA, NO POR NOMBRE: la fila 1 del archivo corresponde al primer departamento activo de la pantalla, la fila 2 al segundo, y así sucesivamente. No cambies el orden de las filas. La columna «departamento» es solo de control para que verifiques el orden; esta plantilla se descarga ya con los departamentos activos en el orden actual de la pantalla. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
   p4: { n: 'Actividades_Departamento', c: ['departamento', 'mes', 'actividad', 'importe'], i: ['Nombre igual al catálogo de Fase 3', '1 a 12', 'Descripción', 'Monto'] }
 };
 function descargarPlantilla(k) {
   const p = PLANT[k], wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([p.c]), 'Plantilla');
-  const filas = [['Columna', 'Formato / valores permitidos'], ...p.c.map((c, i) => [c, p.i[i]]), ...(p.ley ? [[], ['Código de categoría', 'Significado'], ...p.ley] : [])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(k === 'p5' ? [p.c, ...S.f3.deps.filter(d => d.activo).map(d => [d.nombre])] : [p.c]), 'Plantilla');   // p5 se precarga con los departamentos en el orden de la pantalla
+  const filas = [['Columna', 'Formato / valores permitidos'], ...p.c.map((c, i) => [c, p.i[i]]), ...(p.ley ? [[], ['Código de categoría', 'Significado'], ...p.ley] : []), ...(p.nota ? [[], ['IMPORTANTE', p.nota]] : [])];
   const ws = XLSX.utils.aoa_to_sheet(filas), negrita = { font: { bold: true } };
   const titulos = new Set([0, ...(p.ley ? [p.c.length + 2] : [])]);               // filas de encabezado de cada tabla
   filas.forEach((f, i) => f.forEach((_, j) => { const c = ws[XLSX.utils.encode_cell({ r: i, c: j })]; if (c && (titulos.has(i) || j === 0)) c.s = negrita; }));   // encabezados y nombres de columna en negritas
+  if (p.nota) { const c = ws[XLSX.utils.encode_cell({ r: filas.length - 1, c: 1 })]; if (c) c.s = { alignment: { wrapText: true, vertical: 'top' } }; }
   ws['!cols'] = [{ wch: 28 }, { wch: 95 }];
   XLSX.utils.book_append_sheet(wb, ws, 'Instrucciones');
   XLSX.writeFile(wb, `Plantilla_${p.n}.xlsx`);
@@ -68,7 +74,7 @@ async function leerExcel(f, k) {
   const h = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(x => String(x).trim()), p = PLANT[k];
   const falt = p.c.filter(c => !h.includes(c) && !(p.opc || []).includes(c));
   if (falt.length) throw new Error('El archivo no coincide con la plantilla. Faltan columnas: ' + falt.join(', '));
-  return XLSX.utils.sheet_to_json(ws, { defval: '' });
+  return XLSX.utils.sheet_to_json(ws, { defval: '', blankrows: k === 'p5' });
 }
 const zona = (k, fn, ok, titulo) => `<div class="border-2 border-dashed ${ok ? 'border-emerald-400 bg-emerald-50/40' : 'border-slate-300'} rounded-lg p-4">
   <div class="font-semibold text-sm">${titulo}</div>
