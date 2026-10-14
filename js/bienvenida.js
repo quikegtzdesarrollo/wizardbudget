@@ -30,30 +30,35 @@ const TUT = [
     sube: [], da: 'Reporte oficial listo para la Junta y el Concilio de Mayordomía.' }
 ];
 let tutI = 0, selPerfil = null, selIglesia = '', modalCancelable = false;
+/** Botón del asistente mientras no hay acceso: se ve, pero deshabilitado. Se habilita (ver rama 'activo') cuando un administrador autoriza a la persona. */
+const btnEntrarOff = () => `<button disabled title="Se habilita cuando un administrador autorice tu acceso" class="px-6 py-3 rounded-xl bg-slate-200 text-slate-500 font-semibold cursor-not-allowed">🔒 Entrar al asistente</button>`;
 
 function mostrarBienvenida() {
   ir('view-bienvenida'); tutI = 0; renderBienvenida(); renderTutorial();
   const c = contextoSesion;
-  if (c.acceso === 'pendiente' && !(c.solicitud?.perfil && c.solicitud?.iglesia_id)) abrirModalPerfil(false);   // primera vez: pantalla oscurecida
+  if (c.acceso === 'pendiente' && !(c.solicitud?.perfil && c.solicitud?.iglesia_id)) abrirModalPerfil(true);   // primera vez: pantalla oscurecida (se puede cerrar con «Más tarde»; nadie queda atrapado)
 }
 
 function renderBienvenida() {
   const c = contextoSesion, u = usuarioSesion, act = c.acceso === 'activo', s = c.solicitud || {};
   $('bv-nombre').textContent = u.nombre || u.email;
-  $('bv-rol').textContent = act ? (ROLES[u.rol] || u.rol).toUpperCase() : c.acceso === 'inactivo' ? 'ACCESO DESACTIVADO' : 'ACCESO PENDIENTE';
+  $('bv-rol').textContent = act ? (ROLES[u.rol] || u.rol).toUpperCase() : c.acceso === 'inactivo' ? 'ACCESO DESACTIVADO' : c.acceso === 'error' ? 'VERIFICANDO ACCESO' : 'ACCESO PENDIENTE';
   const caja = (cls, html) => `<div class="p-4 rounded-xl border text-sm ${cls}">${html}</div>`;
   let est, acc = '';
   if (act) {
     est = caja('bg-emerald-50 border-emerald-200 text-emerald-900', `✅ Tienes acceso como <strong>${ROLES[u.rol]}</strong>${u.rol === 'superadmin' ? '' : ` · Iglesia(s): ${c.iglesias.map(i => esc(i.nombre)).join(', ')}`}.`);
     acc = `<button onclick="entrarAsistente()" class="px-6 py-3 rounded-xl bg-sda-900 text-white font-semibold shadow-lg hover:bg-sda-800 transition">Entrar al asistente →</button>` +
       (u.rol === 'superadmin' ? `<button onclick="abrirAdmin()" class="px-6 py-3 rounded-xl bg-white border border-slate-300 font-semibold hover:bg-slate-50 transition">👥 Administración de usuarios</button>` : '');
+  } else if (c.acceso === 'error') {
+    est = caja('bg-amber-50 border-amber-300 text-amber-900', `⚠️ No pudimos verificar tu acceso en este momento. Puedes conocer el recorrido de abajo y reintentar con «Verificar acceso».<div class="mt-1 text-xs opacity-80">Detalle: ${esc(c.errorVerificacion || '')}</div>`);
+    acc = btnEntrarOff() + `<button onclick="verificarEstadoSesion()" class="px-5 py-2.5 rounded-xl bg-sda-900 text-white font-semibold hover:bg-sda-800 transition">↻ Verificar acceso</button>`;
   } else if (c.acceso === 'inactivo') {
-    est = caja('bg-red-50 border-red-200 text-red-900', '⛔ Tu acceso está desactivado. Contacta al administrador del sistema.');
+    est = caja('bg-red-50 border-red-200 text-red-900', '⛔ Tu acceso está desactivado. Contacta al administrador del sistema; puedes conocer el recorrido de abajo.'); acc = btnEntrarOff();
   } else {
     est = caja('bg-amber-50 border-amber-300 text-amber-900', s.perfil && s.iglesia_id
-      ? `⏳ <strong>Tu solicitud está pendiente.</strong> Perfil: <strong>${ROLES[s.perfil]}</strong> · Iglesia: <strong>${esc(s.iglesia_nombre || '')}</strong>. Un administrador revisará tu acceso; mientras tanto puedes conocer el recorrido de abajo.`
+      ? `⏳ <strong>Tu solicitud está pendiente.</strong> Perfil: <strong>${ROLES[s.perfil]}</strong> · Iglesia: <strong>${esc(s.iglesia_nombre || '')}</strong>. Un administrador revisará tu acceso; mientras tanto puedes conocer el recorrido de abajo. Cuando te autoricen, presiona «Verificar acceso» y se habilitará el botón para entrar al asistente.`
       : '⏳ Para solicitar acceso, elige tu perfil y tu iglesia.');
-    acc = `<button onclick="verificarEstadoSesion()" class="px-5 py-2.5 rounded-xl bg-sda-900 text-white font-semibold hover:bg-sda-800 transition">↻ Verificar acceso</button>
+    acc = btnEntrarOff() + `<button onclick="verificarEstadoSesion()" class="px-5 py-2.5 rounded-xl bg-sda-900 text-white font-semibold hover:bg-sda-800 transition">↻ Verificar acceso</button>
            <button onclick="abrirModalPerfil(true)" class="px-5 py-2.5 rounded-xl bg-white border border-slate-300 font-semibold hover:bg-slate-50 transition">Cambiar mi selección</button>`;
   }
   $('bv-estado').innerHTML = est; $('bv-acciones').innerHTML = acc;
@@ -103,7 +108,7 @@ function renderModalPerfil() {
     <div><p class="text-sm font-semibold text-slate-700 mb-2">2. ¿A qué iglesia perteneces?</p>
       ${cat.length ? `<select onchange="selIglesia=this.value;renderModalPerfil()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option value="">— Selecciona tu iglesia —</option>${cat.map(i => `<option value="${i.id}" ${i.id === selIglesia ? 'selected' : ''}>${esc(i.nombre)}</option>`).join('')}</select>`
         : '<p class="text-sm text-amber-700">Aún no hay iglesias registradas. Contacta al administrador del sistema.</p>'}</div>
-    <div class="flex justify-end gap-3 pt-2">${modalCancelable ? '<button onclick="cerrarModalPerfil()" class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">Cancelar</button>' : ''}
+    <div class="flex justify-end gap-3 pt-2">${modalCancelable ? '<button onclick="cerrarModalPerfil()" class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">Más tarde</button>' : ''}
       <button onclick="confirmarPerfil()" ${selPerfil && selIglesia ? '' : 'disabled'} class="px-5 py-2 rounded-lg bg-sda-900 text-white text-sm font-semibold hover:bg-sda-800 disabled:opacity-40 disabled:cursor-not-allowed">Continuar →</button></div></div>`;
 }
 async function confirmarPerfil() {
