@@ -2,6 +2,8 @@
 -- Ejecutar UNA vez en Supabase > SQL Editor, después de 03_departamentos_sin_catalogo.sql.
 
 -- 1. ROLES: superadmin + los 4 perfiles (los roles anteriores se convierten)
+-- (se quita primero el constraint viejo: si no, el UPDATE a los roles nuevos lo violaría)
+alter table public.usuarios_autorizados drop constraint if exists usuarios_autorizados_rol_check;
 update public.usuarios_autorizados set rol = case rol
   when 'secretario' then 'tesorero' when 'director' then 'director_mayordomia' when 'junta' then 'anciano_asesor' else rol end;
 alter table public.usuarios_autorizados drop constraint if exists usuarios_autorizados_rol_check;

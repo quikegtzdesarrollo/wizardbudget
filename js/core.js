@@ -4,7 +4,7 @@ const S = {
   fase: 1, aN: new Date().getFullYear() + 1, aN1: new Date().getFullYear(), pid: null, estado: 'borrador', iglesia: '',
   f1: { sec: [], ecl: [], asig: {}, origen: {}, vista: 'miembros', q: '', soloSin: false, pag: 0 },            // vinc: {indiceUF: [indiceMiembro,...]}
   f2: { m: [] },
-  f3: { deps: [] },   // sin catálogo: los departamentos vienen de la Plantilla 5 (Fase 3)
+  f3: { deps: [] },   // catálogo por iglesia (catalogo_departamentos) + valores de la Plantilla 5 (Fase 3)
   f4: { infl: 5, crec: 0, acts: [], ap: {} },    // ap: {depId: {v, c}}
   f5: { dig: { dn: 0, on: 0, af: 0, ad: 0 }, pct: {}, sb: { base: 0, fecha: '', d: {} } }
 };
@@ -56,9 +56,9 @@ const PLANT = {
             'Ofrenda UF: total de la ofrenda (100%) que depositaron en el mes los diezmantes o unidades financieras (sin la Ofrenda Global ni los ingresos directos)', 'Ofrenda Global del mes: depósitos sin nombre, por el monto COMPLETO (no el 40%); 0 si no hubo', 'Ingresos directos del mes (depositados directo a un departamento; no se dividen)'] },
   p5: { n: 'Presupuesto_Departamentos',
         c: ['departamento', 'porcentaje_asignado', 'gasto', 'miscelaneos', 'transferencias_entrada', 'transferencias_salida'],
-        i: ['Nombre del departamento (se carga tal cual; no se guarda un catálogo). Un renglón por departamento, sin repetir', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
+        i: ['Nombre del departamento (los nombres nuevos se registran en el catálogo de la iglesia; los deshabilitados en el catálogo se omiten). Un renglón por departamento, sin repetir', '% que le toca a este departamento (0 a 100). La suma de todos debe dar 100', 'Gasto del departamento',
             'Gastos misceláneos del departamento', 'Transferencias que RECIBE de otros departamentos', 'Transferencias que ENVÍA a otros departamentos'],
-        nota: 'CARGA TODOS LOS DEPARTAMENTOS ACTUALES de la iglesia. Si en el nuevo año habrá un departamento nuevo, inclúyelo también, aunque sea con ceros, porque no tuvo presupuesto ni movimientos en el año actual. Los nombres se cargan desde la columna «departamento» y de ahí pasan a la Fase 4 para los ajustes. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
+        nota: 'CARGA TODOS LOS DEPARTAMENTOS ACTUALES de la iglesia. Si en el nuevo año habrá un departamento nuevo, inclúyelo también, aunque sea con ceros, porque no tuvo presupuesto ni movimientos en el año actual. Los nombres se cargan desde la columna «departamento» y de ahí pasan a la Fase 4 para los ajustes. Los departamentos nuevos se registran en el catálogo de la iglesia (Fase 3); los que estén deshabilitados en el catálogo se omiten, y los habilitados que no vengan en el archivo se agregan en ceros. Los ingresos directos no se capturan: el sistema reparte el total de ingresos directos de la Fase 2 según el % asignado.' },
   p4: { n: 'Actividades_Departamento', c: ['departamento', 'actividad', 'importe'], i: ['Nombre igual al del departamento en la Fase 3', 'Descripción de la actividad', 'Monto estimado de la actividad'] }
 };
 function descargarPlantilla(k) {
@@ -160,6 +160,8 @@ async function initWizard() {
     if (data) Object.assign(S, data.datos, { pid: data.id, estado: data.estado, fase: data.fase_actual, aN1: data.anio_evaluado, aN: data.anio_presupuestado, iglesia: ig });
     migrarDeps();
     await cargarMemoriaUF(ig);
+    await cargarCatalogo(ig);
+    await sincronizarCatalogoConBorrador();
   } catch (e) { console.error(e); alert('No se pudo cargar la información: ' + e.message); }
   render();
 }

@@ -20,7 +20,7 @@ const TUT = [
     que: ['Sube la ejecución mensual: diezmos, gastos, ofrenda de las UF, ofrenda global e ingresos directos.', 'La ofrenda total se divide 60/40: el 60% se queda en la iglesia y el 40% va a la asociación.', 'Los ingresos directos se suman aparte.'],
     sube: ['Plantilla 3 · Ejecución mensual'], da: 'Totales anuales, saldo del año y la base para repartir entre departamentos.' },
   { n: 3, t: 'Departamentos', lema: 'Reparte entre tus ministerios',
-    que: ['Carga todos los departamentos actuales con su % asignado, gasto, misceláneos y transferencias.', 'Si el próximo año habrá un departamento nuevo, inclúyelo aunque sea en ceros.', 'Los ingresos se calculan solos según el % de cada uno.'],
+    que: ['Carga todos los departamentos actuales con su % asignado, gasto, misceláneos y transferencias.', 'Si el próximo año habrá un departamento nuevo, inclúyelo aunque sea en ceros.', 'Usa el catálogo para habilitar, deshabilitar o crear departamentos.', 'Los ingresos se calculan solos según el % de cada uno.'],
     sube: ['Plantilla 5 · Departamentos'], da: 'Saldo final de cada departamento y validación de porcentajes y transferencias.' },
   { n: 4, t: 'Ajustes e inflación', lema: 'Planea el nuevo año',
     que: ['Define la inflación y el crecimiento esperado.', 'Sube el plan de actividades: lo que cada departamento quiere gastar.', 'El sistema marca en rojo lo que pasa del límite indexado; tú decides el monto aprobado.'],

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Especificación Funcional y Técnica - Presupuesto Operativo Anual</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --text-dark: #1f2937;
+            --text-muted: #4b5563;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --code-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2.5rem;
+            font-size: 1.6rem;
+        }
+
+        h3 {
+            color: var(--primary-light);
+            margin-top: 1.8rem;
+            font-size: 1.25rem;
+        }
+
+        h4 {
+            color: var(--text-dark);
+            margin-top: 1.2rem;
+            font-size: 1.05rem;
+        }
+
+        p, li {
+            color: var(--text-dark);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: -0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: #f8fafc;
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            line-height: 1.45;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .formula {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-light);
+            padding: 0.8rem 1.2rem;
+            margin: 1rem 0;
+            font-weight: 600;
+            color: #1e40af;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-automatic {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-manual {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-new {
+            background-color: #e0e7ff;
+            color: #3730a3;
+            margin-left: 0.4rem;
+            font-size: 0.7rem;
+        }
+
+        .pending {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 0.6rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .pending, .pending p, .pending li {
+            color: #78350f;
+        }
+
+        .pending ul {
+            margin: 0.3rem 0;
+        }
+
+        .changelog {
+            background-color: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1.4rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Documento de Especificación Funcional y Técnica</h1>
+    <div class="subtitle">Sistema Asistente para la Elaboración del Presupuesto Operativo Anual (Iglesia Adventista) &mdash; Versión 2</div>
+
+    <div class="changelog">
+        <strong>Versión 2: cambios respecto a la versión anterior</strong>
+        <ul>
+            <li>Se incorporan los campos que el Excel manual utiliza, total o parcialmente, en sus cálculos, indicando para qué sirve cada uno. Se identifican con la etiqueta <span class="badge badge-new">Nuevo</span>.</li>
+            <li>Se agrega el requerimiento de descarga de plantillas Excel en cada fase con carga de archivo (sección 3.2).</li>
+            <li>Se agrega la Sección 5 de la Fase 5 (Saldos Iniciales).</li>
+            <li>Los recuadros <strong>Por confirmar</strong> señalan puntos donde el proceso manual y esta definición difieren, o donde falta una regla.</li>
+            <li>No se retiró contenido de la versión anterior. El script SQL de la sección 5 no se modificó en esta versión.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <h2>1. Visión General y Arquitectura Tecnológica</h2>
+    
+    <h3>1.1 Propósito del Sistema</h3>
+    <p>El <strong>Asistente de Presupuesto Operativo Anual</strong> es una aplicación web interactiva (<em>wizard</em> guiado) que automatiza, consolida y facilita la planificación financiera en la iglesia local. Guía paso a paso al Tesorero y al Secretario desde la conciliación de feligresía hasta el informe ejecutivo final para la Junta de Iglesia y el Concilio de Mayordomía.</p>
+
+    <h3>1.2 Diagrama y Stack Tecnológico (JAMstack / SPA Estática)</h3>
+    <pre>
+┌─────────────────────────────────────────────────────────┐
+│              CLIENTE / FRONTEND (HTML5 / JS)            │
+│  • Código fuente en GitHub (Deploy vía GitHub Pages/Vercel)│
+│  • Lógica UI, tablas dinámicas y procesamiento SheetJS  │
+└────────────────────────────┬────────────────────────────┘
+                             │
+            Consumo de APIs  │  Auth Tokens (JWT) &
+           Restful / Realtime│  Políticas RLS
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│               BACKEND / INFRAESTRUCTURA                 │
+│                      (SUPABASE)                         │
+│  • Supabase Auth (Google OAuth 2.0)                     │
+│  • PostgreSQL Database (Row Level Security - RLS)       │
+│  • Supabase Storage (Archivos Excel/CSV cargados)       │
+└─────────────────────────────────────────────────────────┘
+    </pre>
+
+    <ul>
+        <li><strong>Frontend:</strong> Archivos estáticos HTML5, CSS3 (Tailwind CSS) y JavaScript nativo (ES6+).</li>
+        <li><strong>Control de Versiones y CI/CD:</strong> Repositorio en <strong>GitHub</strong> con despliegue continuo.</li>
+        <li><strong>Backend como Servicio (BaaS):</strong> <strong>Supabase</strong>.
+            <ul>
+                <li><strong>Base de Datos:</strong> PostgreSQL con <strong>Row Level Security (RLS)</strong> activado en el 100% de las tablas.</li>
+                <li><strong>Autenticación:</strong> Google OAuth 2.0 integrado a través de Supabase Auth.</li>
+            </ul>
+        </li>
+        <li><strong>Librerías Cliente:</strong> <code>@supabase/supabase-js</code> (SDK), <code>SheetJS</code> (procesamiento de archivos Excel/CSV) y <code>jspdf</code> / <code>html2canvas</code> (generación de reportes PDF).</li>
+    </ul>
+
+    <!-- SECCIÓN 2 -->
+    <h2>2. Gestión de Seguridad, Control de Accesos y Multitenancy</h2>
+
+    <h3>2.1 Módulo Super Administrador (Allowlist)</h3>
+    <p>El sistema opera bajo una política de lista blanca estricta (<em>Allowlist</em>). Únicamente las cuentas de correo electrónico previamente registradas y activas en la tabla <code>usuarios_autorizados</code> de Supabase podrán iniciar sesión con Google OAuth.</p>
+    
+    <h4>Estructura de la Allowlist:</h4>
+    <ul>
+        <li><strong>Email:</strong> Correo electrónico de Google.</li>
+        <li><strong>Nombre:</strong> Identificación del usuario.</li>
+        <li><strong>Iglesia Asignada (<code>iglesia_id</code>):</strong> ID de la iglesia donde opera.</li>
+        <li><strong>Rol:</strong> <code>superadmin</code>, <code>tesorero</code>, <code>secretario</code>, <code>director</code>, <code>junta</code>.</li>
+        <li><strong>Estado:</strong> Activo / Inactivo.</li>
+    </ul>
+
+    <h3>2.2 Soporte Multitenancy (Múltiples Iglesias / Grupos)</h3>
+    <p>Para soportar que un mismo usuario opere una o más iglesias o grupos pequeños:</p>
+    <ul>
+        <li>Un usuario puede tener asignadas varias iglesias en la base de datos.</li>
+        <li><strong>Selector de Iglesia Activa:</strong> En el encabezado superior (<em>navbar</em>) del asistente, el usuario visualizará un desplegable para seleccionar la iglesia sobre la cual está elaborando el presupuesto.</li>
+        <li><strong>Aislamiento por RLS:</strong> Las consultas y guardados en Supabase filtrarán automáticamente todos los registros utilizando la variable global del <code>iglesia_id</code> seleccionado en la sesión.</li>
+    </ul>
+
+    <!-- SECCIÓN 3 -->
+    <h2>3. Flujo del Asistente (Proceso en 5 Fases) y Estados de Persistencia</h2>
+
+    <h3>3.1 Gestión de Borradores y Persistencia (Ciclo de Vida)</h3>
+    <p>Cada presupuesto registrado en el sistema poseerá un estado dentro de la tabla <code>presupuesto_encabezado</code>:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Descripción</th>
+                <th>Permisos</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>borrador</code></td>
+                <td>El presupuesto está en proceso de elaboración por las fases 1 a 4.</td>
+                <td>Tesorero / Secretario pueden editar.</td>
+            </tr>
+            <tr>
+                <td><code>en_revision</code></td>
+                <td>El presupuesto está cerrado por la tesorería y en evaluación por el Concilio.</td>
+                <td>Solo lectura para consulta.</td>
+            </tr>
+            <tr>
+                <td><code>aprobado</code></td>
+                <td>Presupuesto cerrado definitivamente y presentado ante la Junta.</td>
+                <td>Lectura y generación de reportes finales.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Guardado Automático:</strong> Cada vez que el usuario presiona el botón <em>"Siguiente Fase"</em>, el sistema ejecuta un <em>UPSERT</em> (insertar o actualizar) en Supabase guardando el progreso de la fase actual, permitiendo retomar el proceso en cualquier momento.</p>
+
+    <pre>
+[ FASE 1 ] ➔ [ FASE 2 ] ➔ [ FASE 3 ] ➔ [ FASE 4 ] ➔ [ FASE 5 ]
+ Conciliación  Análisis     Presupuesto  Evaluación,  Pantalla de
+ Feligresía    Histórico de Departamental  Inflación  Salida
+ y UF          Ingresos/Gastos ($N-1$)   y Cierre     y Reporte Final
+    </pre>
+
+    <h3>3.2 Descarga de Plantillas de Carga <span class="badge badge-new">Nuevo</span></h3>
+    <p><strong>Requerimiento:</strong> toda fase que requiera la carga de un archivo debe incluir un apartado <em>"Descargar plantilla"</em>, desde el cual el usuario obtenga un archivo Excel (<code>.xlsx</code>) con las columnas que debe cargar.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Plantilla</th>
+                <th>Fase</th>
+                <th>Columnas del archivo descargable</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Plantilla 1 (Secretaría)</td>
+                <td>Fase 1</td>
+                <td><code>id_miembro</code>, <code>nombre_completo</code>, <code>categoria</code></td>
+            </tr>
+            <tr>
+                <td>Plantilla 2 (ECLESIA 7)</td>
+                <td>Fase 1</td>
+                <td><code>nombre_uf</code>, <code>marcador_uf</code>, <code>diezma</code>, <code>ofrenda</code>, <code>meses_diezmo</code>, <code>meses_ofrenda</code></td>
+            </tr>
+            <tr>
+                <td>Plantilla 3 (Ejecución Mensual ECLESIA 7)</td>
+                <td>Fase 2</td>
+                <td><code>mes</code>, <code>diezmos</code>, <code>ofrenda_bruta</code>*, <code>gastos</code>, <code>porcentaje_ofrendas</code>*, <code>desglose_remesa_20</code>, <code>desglose_remesa_16</code>, <code>desglose_remesa_4</code>, <code>desglose_remesa_ofg</code>, <code>ingresos_directos</code></td>
+            </tr>
+            <tr>
+                <td>Plantilla 4 (Actividades por Departamento)</td>
+                <td>Fase 4</td>
+                <td><code>departamento</code>, <code>mes</code>, <code>actividad</code>, <code>importe</code></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>* Columnas pendientes de confirmar (ver recuadro <em>Por confirmar</em> de la Fase 2).</p>
+
+    <ul>
+        <li>El apartado se muestra dentro de la fase, junto a cada zona de carga. La Fase 1 muestra un botón por cada plantilla (dos).</li>
+        <li>El archivo descargable contiene una fila de encabezados con los nombres exactos de las columnas, en el orden de esta especificación.</li>
+        <li>Los nombres de columna de la plantilla son los mismos que el sistema valida al cargar. Si el archivo cargado no coincide, el sistema lo informa antes de procesarlo.</li>
+        <li>La plantilla se genera en el navegador con SheetJS (ya incluida en el stack), sin requerir almacenamiento adicional.</li>
+        <li><em>Deseable:</em> una segunda hoja <code>Instrucciones</code> con el propósito, el formato y los valores permitidos de cada columna.</li>
+    </ul>
+
+    <!-- SECCIÓN 4 -->
+    <h2>4. Especificación Funcional de Módulos y Estructura de Plantillas</h2>
+
+    <h3>FASE 1: Conciliación de Feligresía y Unidades Financieras (UF)</h3>
+    <ul>
+        <li><strong>Plantilla 1 (Secretaría - <code>.xlsx/.csv</code>):</strong> Columnas obligatorias: <code>id_miembro</code>, <code>nombre_completo</code>, <code>categoria</code> (<em>Adulto, Joven, Niño/Adolescente</em>). La categoría es una clasificación estadística y no interviene en los cálculos financieros.</li>
+        <li><strong>Plantilla 2 (ECLESIA 7 - <code>.xlsx/.csv</code>):</strong> Columnas obligatorias: <code>nombre_uf</code>, <code>marcador_uf</code>, <code>diezma</code> (<em>SI/NO</em>), <code>ofrenda</code> (<em>SI/NO</em>), <code>meses_diezmo</code> (0-12) <span class="badge badge-new">Nuevo</span>, <code>meses_ofrenda</code> (0-12) <span class="badge badge-new">Nuevo</span>.</li>
+        <li><strong>Procesamiento:</strong>
+            <ol>
+                <li><em>Fuzzy Matching</em> para sugerencias de vinculación entre archivos.</li>
+                <li>Vinculación manual (Relación 1 a Muchos: 1 UF &rarr; N Miembros).</li>
+                <li>Clasificación automática: Registros no asociados se etiquetan como <strong>Visita</strong>; asociados quedan como <strong>Miembro</strong>.</li>
+                <li>Resumen de conciliación <span class="badge badge-new">Nuevo</span>: al terminar la vinculación se muestran # de Miembros, # de Visitas, # de UF, # de UF diezmantes y # de UF en dadivosidad, como control antes de pasar a la Fase 2. Incluye también el total de miembros asociados a cada UF (calculado por la vinculación).</li>
+            </ol>
+        </li>
+    </ul>
+
+    <h4>Propósito de las columnas utilizadas en cálculos <span class="badge badge-new">Nuevo</span></h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Plantilla</th>
+                <th>Columna</th>
+                <th>Para qué se usa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2</td>
+                <td><code>nombre_uf</code></td>
+                <td>Identifica la UF y permite sugerir y registrar su vinculación con los miembros.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><code>diezma</code></td>
+                <td>Cuenta las Unidades Diezmantes (Fase 5, Sección 1) y alimenta "Miembros que Diezmaron {Año Anterior}" (Fase 5, Sección 2).</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><code>ofrenda</code></td>
+                <td>Cuenta las Unidades en Dadivosidad Sistemática (Fase 5, Sección 1) y alimenta "Miembros que Ofrendaron {Año Anterior}" (Fase 5, Sección 2).</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><code>meses_diezmo</code></td>
+                <td>Número de meses del año evaluado con diezmo. Permite desglosar las Unidades Diezmantes en 12, 11 y 10 meses (Fase 5, Sección 1).</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><code>meses_ofrenda</code></td>
+                <td>Número de meses del año evaluado con ofrenda. Permite desglosar las Unidades en Dadivosidad en 12, 11 y 10 meses (Fase 5, Sección 1).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 1)</strong></p>
+        <ul>
+            <li>Criterio de "Unidad Diezmante" y "Unidad en Dadivosidad": en el Excel se cuentan con la marca SI/NO, que no se deriva de los meses, y el conteo no excluye a las Visitas. Definir si el criterio es la marca o los meses, y si las Visitas se cuentan.</li>
+            <li># Miembros Reales (Secretaría): en el Excel es un valor capturado a mano. En esta especificación se entiende como el número de registros de la Plantilla 1.</li>
+        </ul>
+    </div>
+
+    <h3>FASE 2: Captura y Análisis Histórico de Ingresos, Gastos y Saldos ($N-1$)</h3>
+    <ul>
+        <li><strong>Plantilla 3 (Ejecución Mensual ECLESIA 7 - <code>.xlsx/.csv</code>):</strong> Columnas obligatorias: <code>mes</code> (1-12), <code>diezmos</code>, <code>ofrenda_bruta</code>, <code>gastos</code>, <code>porcentaje_ofrendas</code>, <code>desglose_remesa_20</code> <span class="badge badge-new">Nuevo</span>, <code>desglose_remesa_16</code> <span class="badge badge-new">Nuevo</span>, <code>desglose_remesa_4</code> <span class="badge badge-new">Nuevo</span>, <code>desglose_remesa_ofg</code> <span class="badge badge-new">Nuevo</span>, <code>ingresos_directos</code> <span class="badge badge-new">Nuevo</span>.</li>
+    </ul>
+    
+    <div class="formula">Ofrenda Local (60%) = Ofrenda Bruta &times; 0.60</div>
+    <div class="formula">Remesa Asociación (40%) = Ofrenda Bruta &times; 0.40</div>
+    <div class="formula">Saldo Neto Mensual = Ofrenda Local (60%) - Gastos Locales</div>
+
+    <h4>Propósito de las columnas utilizadas en cálculos <span class="badge badge-new">Nuevo</span></h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Columna</th>
+                <th>Para qué se usa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>diezmos</code></td>
+                <td>Diezmos del mes. Su suma anual es el total de Diezmos N-1 de la Matriz de Referencia (Fase 5, Sección 3).</td>
+            </tr>
+            <tr>
+                <td><code>gastos</code></td>
+                <td>Gastos locales del mes. Se restan en el saldo mensual y su suma anual es el total de Gastos N-1.</td>
+            </tr>
+            <tr>
+                <td><code>desglose_remesa_20</code>, <code>desglose_remesa_16</code>, <code>desglose_remesa_4</code></td>
+                <td>Conceptos en que se desglosa la remesa (40%) del mes. Su suma es la base para derivar la Ofrenda 100% y la Ofrenda Local (60%).</td>
+            </tr>
+            <tr>
+                <td><code>desglose_remesa_ofg</code></td>
+                <td>Monto "OFG" del mes (no es un porcentaje). Se suma a los conceptos anteriores para obtener la remesa.</td>
+            </tr>
+            <tr>
+                <td><code>ingresos_directos</code></td>
+                <td>Ofrendas directas del mes. Se suman a la Ofrenda Local (60%) para calcular el saldo mensual y la Ofrenda 60% anual.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Cálculo a partir de las nuevas columnas</strong> <span class="badge badge-new">Nuevo</span></p>
+    <div class="formula">Remesa Asociación (40%) = desglose_remesa_20 + desglose_remesa_16 + desglose_remesa_4 + desglose_remesa_ofg</div>
+    <div class="formula">Ofrenda 100% = Remesa Asociación &times; 100 / 40</div>
+    <div class="formula">Ofrenda Local (60%) = Ofrenda 100% &times; 0.60</div>
+    <div class="formula">Ofrenda 60% del Mes = Ofrenda Local (60%) + Ingresos Directos</div>
+    <div class="formula">Saldo Mensual = Ofrenda 60% del Mes - Gastos</div>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 2)</strong></p>
+        <ul>
+            <li><code>ofrenda_bruta</code> y <code>porcentaje_ofrendas</code>: el Excel no las usa, porque parte de la remesa (40%) desglosada. Definir si se cargan o se sustituyen por el desglose.</li>
+            <li>Las fórmulas originales de esta fase no incluyen ingresos directos en el saldo; el Excel sí los incluye en la "Ofrenda 60%".</li>
+            <li>En el Excel algunos meses suman el concepto OFG a la remesa y otros no. Aquí se normaliza sumándolo siempre (0 si está vacío).</li>
+            <li>Nombre de los conceptos de desglose (20%, 16%, 4% y OFG), que el Excel solo identifica por su porcentaje.</li>
+        </ul>
+    </div>
+
+    <p><strong>Outputs:</strong> Resumen anual consolidado con totales de Diezmos, Ofrendas Brutas, Ofrenda Local (60%), Remesas (40%), Ingresos Directos, Gastos y Saldo Anual Neto, más el promedio mensual (anual / 12) de Diezmos, Ofrenda 60% y Gastos <span class="badge badge-new">Nuevo</span>. El total anual de Ofrenda 60% es la base del reparto departamental (Fase 3) y de la Proyección (Fase 5).</p>
+
+    <h3>FASE 3: Catálogo y Presupuesto Operativo por Departamentos</h3>
+    <ul>
+        <li><strong>Gestión del Catálogo Departamental:</strong> Antes de ingresar montos, la tesorería dispondrá de una pantalla para <strong>Activar, Desactivar o Agregar</strong> departamentos personalizados de su iglesia local.</li>
+        <li><strong>Inputs por Departamento:</strong> Nombre, % Asignado, Gasto, Gastos Misceláneos, Ingresos Directos, Transferencias Entrantes, Transferencias Salientes. <em>Ingresos (60%)</em> se calcula, no se captura <span class="badge badge-new">Nuevo</span>.</li>
+    </ul>
+
+    <h4>Propósito de cada campo <span class="badge badge-new">Nuevo</span></h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Campo</th>
+                <th>Origen</th>
+                <th>Para qué se usa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>% Asignado</td>
+                <td>Captura</td>
+                <td>Reparte la Ofrenda 60% anual N-1 entre los departamentos. La suma debe ser 100%.</td>
+            </tr>
+            <tr>
+                <td>Ingresos (60%)</td>
+                <td>Calculado: Ofrenda 60% anual N-1 &times; % Asignado</td>
+                <td>Base del saldo de cada departamento.</td>
+            </tr>
+            <tr>
+                <td>Gasto</td>
+                <td>Captura</td>
+                <td>Se resta en el Saldo Parcial y suma al Total Gastos.</td>
+            </tr>
+            <tr>
+                <td>Gastos Misceláneos</td>
+                <td>Captura</td>
+                <td>Suma al Total Gastos.</td>
+            </tr>
+            <tr>
+                <td>Ingresos Directos</td>
+                <td>Captura</td>
+                <td>Suma al Saldo Final.</td>
+            </tr>
+            <tr>
+                <td>Transferencias Entrantes / Salientes</td>
+                <td>Captura</td>
+                <td>Ajustan el Saldo Final entre departamentos. Las entrantes deben igualar a las salientes.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="formula">Ingresos = Ofrenda 60% anual (N-1) &times; % Asignado</div>
+    <div class="formula">Saldo Parcial = Ingresos - Gasto</div>
+    <div class="formula">Total Gastos = Gasto + Gastos Misceláneos</div>
+    <div class="formula">Saldo Semifinal = Ingresos - Total Gastos</div>
+    <div class="formula">Saldo Final = Saldo Semifinal + Ingresos Directos + Transf. Entrantes - Transf. Salientes</div>
+    
+    <p><strong>Validaciones:</strong> Verificación automática de que &sum; Transf. Entrantes = &sum; Transf. Salientes, y de que &sum; % Asignado = 100% <span class="badge badge-new">Nuevo</span>.</p>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 3)</strong></p>
+        <ul>
+            <li>La Ofrenda 60% anual ya incluye los ingresos directos (Fase 2) y esos mismos ingresos se vuelven a sumar en la columna "Ingresos Directos" del Saldo Final: riesgo de doble conteo, presente en el Excel.</li>
+            <li>La fórmula del Saldo Final en el Excel no resta las transferencias salientes; la de esta especificación sí.</li>
+            <li>Los datos por departamento (Gasto, Misceláneos, Ingresos Directos y transferencias) se capturan manualmente; esta fase no tiene plantilla de carga.</li>
+        </ul>
+    </div>
+
+    <h3>FASE 4: Formulación, Ajuste e Inflación del Nuevo Presupuesto ($N$)</h3>
+    <ul>
+        <li><strong>Configuración Global:</strong> Módulo de ajustes para definir el % de Inflación (Por defecto: <code>5.00%</code>) y el <strong>% de Crecimiento Proyectado de Ofrenda</strong> <span class="badge badge-new">Nuevo</span> (captura manual, sin valor por defecto; se usa para proyectar la Ofrenda 60% del año nuevo en la Fase 5, Sección 3).</li>
+        <li><strong>Plantilla 4 (Actividades por Departamento - <code>.xlsx/.csv</code>):</strong> Columnas obligatorias: <code>departamento</code>, <code>mes</code> (1-12), <code>actividad</code>, <code>importe</code>. El <code>importe</code> de las actividades se suma por departamento para obtener su Gasto Estimado, que alimenta la Fase 5 (Sección 4) <span class="badge badge-new">Nuevo</span>.</li>
+    </ul>
+
+    <div class="formula">Gasto Estimado del Departamento = &sum; importe de sus actividades <span class="badge badge-new">Nuevo</span></div>
+    <div class="formula">Total Gasto Estimado = &sum; Gasto Estimado de todos los departamentos <span class="badge badge-new">Nuevo</span></div>
+    <div class="formula">Límite Indexado N = Saldo Operativo (N-1) &times; (1 + % Inflación / 100)</div>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 4)</strong></p>
+        <ul>
+            <li>El Excel no usa el saldo del año anterior ni la inflación para limitar el gasto: el % de cada departamento se asigna sobre la proyección de ofrenda del año nuevo (Fase 5, Secciones 3 y 4). Definir si el Límite Indexado se mantiene como alerta adicional o se sustituye por esa regla.</li>
+        </ul>
+    </div>
+
+    <ul>
+        <li>Si el importe solicitado supera el límite indexado, el departamento se resalta en <strong>rojo</strong>.</li>
+        <li>Permite ajustar el monto aprobado y capturar un comentario explicativo.</li>
+        <li><strong>Cierre y Recálculo:</strong> El sistema recalcula los nuevos porcentajes de asignación departamental sobre el total general aprobado.</li>
+    </ul>
+
+    <h3>FASE 5: Pantalla Resultante / Salida del Sistema y Exportación</h3>
+    
+    <h4>Sección 1: Estadística</h4>
+    <ul>
+        <li># Miembros Reales (Secretaría): número de registros de la Plantilla 1 (ver <em>Por confirmar</em>, Fase 1)</li>
+        <li># Unidades Financieras (ECLESIA 7)</li>
+        <li>Unidades Diezmantes: UF con <code>diezma</code> = SI, con desglose por 12, 11 y 10 meses de diezmo (<code>meses_diezmo</code>) <span class="badge badge-new">Nuevo</span></li>
+        <li>Unidades en Dadivosidad Sistemática: UF con <code>ofrenda</code> = SI, con desglose por 12, 11 y 10 meses de ofrenda (<code>meses_ofrenda</code>) <span class="badge badge-new">Nuevo</span></li>
+        <li># Miembros vinculados y # Visitas, tomados del resumen de conciliación de la Fase 1 <span class="badge badge-new">Nuevo</span></li>
+    </ul>
+
+    <h4>Sección 2: Desafío de Fe + {Año Nuevo}</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Campo</th>
+                <th>Modo de Carga</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Miembros que Diezmaron {Año Anterior}</td><td><span class="badge badge-automatic">Automático</span></td></tr>
+            <tr><td>Miembros que Ofrendaron {Año Anterior}</td><td><span class="badge badge-automatic">Automático</span></td></tr>
+            <tr><td>Miembros que Diezmarán {Nuevo Año}</td><td><span class="badge badge-manual">Captura Manual</span></td></tr>
+            <tr><td>Miembros que Ofrendarán {Nuevo Año}</td><td><span class="badge badge-manual">Captura Manual</span></td></tr>
+            <tr><td>Aumentar # Miembros en Fidelidad</td><td><span class="badge badge-manual">Captura Manual</span></td></tr>
+            <tr><td>Aumentar # Miembros en Dadivosidad</td><td><span class="badge badge-manual">Captura Manual</span></td></tr>
+        </tbody>
+    </table>
+
+    <p><strong>Origen de los campos automáticos</strong> <span class="badge badge-new">Nuevo</span>: "Miembros que Diezmaron {Año Anterior}" toma el valor de Unidades Diezmantes, y "Miembros que Ofrendaron {Año Anterior}" el de Unidades en Dadivosidad Sistemática (Sección 1).</p>
+
+    <h4>Sección 3: Proyección + {Año Nuevo}</h4>
+
+    <div class="formula">Proyección Ofrenda 60% N = Ofrenda 60% (N-1) &times; (1 + % Crecimiento Proyectado / 100) <span class="badge badge-new">Nuevo</span></div>
+    <div class="formula">Gastos N = &sum; Gasto por % de todos los departamentos (Sección 4) <span class="badge badge-new">Nuevo</span></div>
+    <div class="formula">% Incremento de Gasto Estimado = (Total Gasto Estimado - Gastos N-1) / Gastos N-1 <span class="badge badge-new">Nuevo</span></div>
+    <p>La Proyección Ofrenda 60% N es la base del "Gasto por %" de la Sección 4. El % de incremento es un indicador informativo para el Concilio y no restringe el presupuesto.</p>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 5, Sección 3)</strong></p>
+        <ul>
+            <li>En el Excel el % de crecimiento se captura a mano y no se vincula a los campos del Desafío de Fe.</li>
+            <li>En el Excel los Gastos N igualan a la Proyección de ofrenda (presupuesto equilibrado), pero sin validación. Definir si el sistema debe alertar cuando el Total Gasto Estimado supere la Proyección.</li>
+        </ul>
+    </div>
+    
+    <p><strong>1. Matriz Proyección {Año Nuevo}:</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Anual</th>
+                <th>Mensual</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Ofrenda 60%</td><td>Proyección Total N</td><td>(Proyección Total N) / 12</td></tr>
+            <tr><td>Gastos</td><td>Presupuesto Total Gastos N</td><td>(Presupuesto Total Gastos N) / 12</td></tr>
+        </tbody>
+    </table>
+
+    <p><strong>2. Matriz Referencia {Año Anterior} (Histórica):</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Anual</th>
+                <th>Mensual</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Diezmos</td><td>Total Diezmos N-1</td><td>(Total Diezmos N-1) / 12</td></tr>
+            <tr><td>Ofrenda 60%</td><td>Total Ofrenda Local N-1</td><td>(Total Ofrenda Local N-1) / 12</td></tr>
+            <tr><td>Gastos</td><td>Total Gastos N-1</td><td>(Total Gastos N-1) / 12</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Sección 4: Reestructuración de Porcentajes de Iglesia + {Nombre de la Iglesia}</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Departamento</th>
+                <th>AÑO ANTERIOR:<br>% Asignado Anterior</th>
+                <th>AÑO NUEVO:<br>Gasto Estimado</th>
+                <th>AÑO NUEVO:<br>% Representativo Gasto</th>
+                <th>AÑO NUEVO:<br>Gasto por %</th>
+                <th>AÑO NUEVO:<br>Propuesta % Concilio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><em>Lista de Departamentos</em></td>
+                <td>% Anterior</td>
+                <td>$ Estimado</td>
+                <td>% = (Estimado / Total Estimado)</td>
+                <td>$ Acordado Concilio</td>
+                <td>% = (Gasto por % / Total Gasto por %)</td>
+            </tr>
+            <tr>
+                <td><strong>TOTALES / SUMARIZADOS</strong></td>
+                <td><strong>100.00%</strong></td>
+                <td><strong>Total Gasto Estimado</strong></td>
+                <td><strong>100.00%</strong></td>
+                <td><strong>Total Gasto por %</strong></td>
+                <td><strong>100.00%</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Reglas de cálculo de esta Sección</strong> <span class="badge badge-new">Nuevo</span></p>
+    <ul>
+        <li><strong>Gasto Estimado:</strong> suma de los importes de las actividades del departamento (Fase 4).</li>
+        <li><strong>Propuesta % Concilio:</strong> porcentaje capturado y ajustado por el Concilio de Mayordomía para cada departamento.</li>
+        <li><strong>Gasto por %:</strong> Proyección Ofrenda 60% N &times; Propuesta % Concilio. Su suma es el Gastos N de la Sección 3.</li>
+        <li><strong>Validación:</strong> &sum; Propuesta % Concilio = 100%.</li>
+    </ul>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 5, Sección 4)</strong></p>
+        <ul>
+            <li>En la tabla de esta Sección el "% Propuesta Concilio" se calcula a partir del "Gasto por %", mientras que en el Excel el % es el dato que se captura y el Gasto por % es el que se calcula. Unificar el sentido.</li>
+        </ul>
+    </div>
+
+    <h4>Sección 5: Saldos Iniciales + {Año Nuevo} <span class="badge badge-new">Nuevo</span></h4>
+    <p>Distribuye entre los departamentos el saldo disponible al inicio del año nuevo, según los porcentajes aprobados por la Junta.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Campo</th>
+                <th>Origen</th>
+                <th>Para qué se usa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Saldo a Fecha de Corte</td>
+                <td>Captura por departamento (fecha de corte configurable, no necesariamente 31 de diciembre)</td>
+                <td>Saldo que cada departamento tiene al momento de elaborar el presupuesto.</td>
+            </tr>
+            <tr>
+                <td>Ajustes</td>
+                <td>Captura por departamento</td>
+                <td>Monto que se descuenta del saldo para la propuesta del Concilio.</td>
+            </tr>
+            <tr>
+                <td>Nuevo Saldo Propuesto (Concilio)</td>
+                <td>Calculado: Saldo a Fecha de Corte - Ajustes</td>
+                <td>Saldo propuesto por el Concilio; su total es el saldo total considerado.</td>
+            </tr>
+            <tr>
+                <td>% Aprobado por Junta</td>
+                <td>Captura por departamento</td>
+                <td>Porcentaje definitivo aprobado por la Junta; define el reparto del saldo.</td>
+            </tr>
+            <tr>
+                <td>Saldo Base a Distribuir</td>
+                <td>Captura (monto)</td>
+                <td>Monto total que se reparte entre los departamentos.</td>
+            </tr>
+            <tr>
+                <td>Saldo Aprobado por Junta</td>
+                <td>Calculado: Saldo Base a Distribuir &times; % Aprobado por Junta</td>
+                <td>Saldo inicial de cada departamento en el año nuevo.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li><strong>Validación:</strong> &sum; % Aprobado por Junta = 100%. Si no suma 100% por redondeo, el sistema muestra una alerta con la diferencia.</li>
+        <li>El catálogo puede incluir fondos que arrastran saldo pero no tienen % asignado (por ejemplo, Ofrenda de Gratitud); su Saldo Aprobado resulta 0.</li>
+    </ul>
+
+    <div class="pending">
+        <p><strong>Por confirmar (Fase 5, Sección 5)</strong></p>
+        <ul>
+            <li>En el Excel el Saldo Base a Distribuir se captura aparte y no coincide con la suma de los saldos a fecha de corte. Definir la regla que lo determina.</li>
+            <li>Definir si esta Sección se incluye en el Reporte Oficial PDF (hoy el PDF cubre las Secciones 1 a 4).</li>
+        </ul>
+    </div>
+
+    <h4>Módulo de Exportación y Hoja de Firmas</h4>
+    <ol>
+        <li><strong>Descargar Excel (<code>.xlsx</code>):</strong> Genera un libro de trabajo formateado para trabajo interno.</li>
+        <li><strong>Exportar Reporte Oficial PDF:</strong> Documento oficial con encabezado institucional, Secciones 1 a 4 y Hoja de Firmas al calce (Pastor Distrital, Tesorero, Primer Anciano, Director de Mayordomía).</li>
+    </ol>
+
+    <!-- SECCIÓN 5 -->
+    <h2>5. Script SQL para Supabase (Base de Datos y RLS)</h2>
+
+    <pre><code>-- 1. EXTENSIONES
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. TABLA DE IGLESIAS (MULTITENANCY)
+CREATE TABLE public.iglesias (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    distrito TEXT,
+    asociacion TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. TABLA DE USUARIOS AUTORIZADOS (ALLOWLIST)
+CREATE TABLE public.usuarios_autorizados (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    nombre TEXT NOT NULL,
+    iglesia_id UUID REFERENCES public.iglesias(id) ON DELETE CASCADE,
+    rol TEXT NOT NULL CHECK (rol IN ('superadmin', 'tesorero', 'secretario', 'director', 'junta')),
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. TABLA DE ENCABEZADO DE PRESUPUESTO (BORRADORES Y DRAFTING)
+CREATE TABLE public.presupuesto_encabezado (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    iglesia_id UUID REFERENCES public.iglesias(id) ON DELETE CASCADE,
+    anio_evaluado INT NOT NULL, -- Año N-1
+    anio_presupuestado INT NOT NULL, -- Año N
+    porcentaje_inflacion NUMERIC(5,2) DEFAULT 5.00,
+    fase_actual INT DEFAULT 1,
+    estado TEXT DEFAULT 'borrador' CHECK (estado IN ('borrador', 'en_revision', 'aprobado')),
+    creado_por TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. CATÁLOGO DE DEPARTAMENTOS POR IGLESIA
+CREATE TABLE public.departamentos (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    iglesia_id UUID REFERENCES public.iglesias(id) ON DELETE CASCADE,
+    nombre TEXT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. PRESUPUESTO DEPARTAMENTAL (FASE 3 Y FASE 4)
+CREATE TABLE public.presupuesto_departamental (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    presupuesto_id UUID REFERENCES public.presupuesto_encabezado(id) ON DELETE CASCADE,
+    departamento_id UUID REFERENCES public.departamentos(id) ON DELETE CASCADE,
+    porcentaje_anterior NUMERIC(5,2) DEFAULT 0.00,
+    gasto_estimado NUMERIC(12,2) DEFAULT 0.00,
+    gasto_por_porcentaje NUMERIC(12,2) DEFAULT 0.00,
+    comentario_ajuste TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- HABILITAR ROW LEVEL SECURITY (RLS) EN TODAS LAS TABLAS
+ALTER TABLE public.iglesias ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.usuarios_autorizados ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.presupuesto_encabezado ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.departamentos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.presupuesto_departamental ENABLE ROW LEVEL SECURITY;
+
+-- POLITICA RLS GENERAL DE SEGURIDAD (LECTURA Y ESCRITURA BASADA EN EMAIL)
+CREATE POLICY "Permite acceso a usuarios en la lista blanca"
+ON public.presupuesto_encabezado
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM public.usuarios_autorizados
+    WHERE email = auth.jwt() ->> 'email'
+    AND activo = TRUE
+  )
+);</code></pre>
+
+</div>
+
+</body>
+</html>
