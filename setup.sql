@@ -295,3 +295,4 @@ grant execute on all functions in schema public to authenticated;
 -- Usuarios nuevos: insert en usuarios_autorizados (+ filas en usuario_iglesias si operan más de una iglesia).
 -- NOTA: después de este script, ejecutar también 02_agrupaciones.sql (memoria de agrupación de la Fase 1).
 -- NOTA: después de 02_agrupaciones.sql, ejecutar 03_departamentos_sin_catalogo.sql (elimina el catálogo de departamentos; los departamentos vienen de la Plantilla 5).
+-- NOTA: después de 03_departamentos_sin_catalogo.sql, ejecutar 04_acceso_y_perfiles.sql (perfiles, solicitud de acceso y administración de usuarios).

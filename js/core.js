@@ -18,6 +18,12 @@ const pc = n => (n || 0).toFixed(2) + '%';
 const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 const si = v => v === true || norm(v) === 'si';
 const idDep = n => 'd:' + norm(n);                       // id estable del departamento = su nombre normalizado (no hay catálogo)
+/* Perfiles / roles y navegación entre pantallas */
+const ROLES = { superadmin: 'Superadministrador', pastor: 'Pastor', tesorero: 'Tesorero', director_mayordomia: 'Director de Mayordomía', anciano_asesor: 'Anciano asesor' };
+const PERFILES = ['pastor', 'tesorero', 'director_mayordomia', 'anciano_asesor'];      // perfiles que una persona puede solicitar
+const VISTAS = ['view-login', 'view-bienvenida', 'view-wizard', 'view-admin'];
+function ir(id) { VISTAS.forEach(v => { const e = document.getElementById(v); if (!e) return; e.classList.toggle('hidden', v !== id); e.classList.toggle('flex', v === 'view-wizard' && id === 'view-wizard'); }); window.scrollTo(0, 0); }
+async function entrarAsistente() { if (contextoSesion?.acceso !== 'activo') return; ir('view-wizard'); await initWizard(); }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 /** Categorías de miembro: en los archivos se capturan los CÓDIGOS; en pantallas y reportes se muestra la etiqueta completa. */
 const CATEGORIAS = { A: 'Adulto', JA: 'Joven', MYA: 'Niño/Adolescente' };
@@ -107,7 +113,9 @@ async function faseSiguiente() {
 }
 
 /* ---------- permisos por rol y estado ---------- */
-const ROLES_EDIT = ['superadmin', 'tesorero', 'secretario'];
+const ROLES_EDIT = ['superadmin', 'tesorero', 'director_mayordomia'];     // editan el borrador y lo envían a revisión
+const ROLES_APROBAR = ['superadmin', 'tesorero', 'pastor', 'anciano_asesor'];
+const ROLES_REABRIR = ['superadmin', 'tesorero'];   // (deben coincidir con fn_rol_puede en supabase/04_acceso_y_perfiles.sql)
 const puedeEditar = () => S.estado === 'borrador' && ROLES_EDIT.includes(usuarioSesion?.rol);
 function aplicarPermisos() {
   const ro = !puedeEditar(), r = usuarioSesion?.rol, e = S.estado;
@@ -118,8 +126,8 @@ function aplicarPermisos() {
   if (S.pid) {
     if (e === 'borrador' && ROLES_EDIT.includes(r) && S.fase === 5) h = b('Enviar a revisión', 'en_revision', 'bg-amber-500 text-white');
     if (e === 'en_revision') {
-      if (['superadmin', 'tesorero', 'junta'].includes(r)) h += b('Aprobar', 'aprobado', 'bg-emerald-600 text-white');
-      if (['superadmin', 'tesorero'].includes(r)) h += b('Reabrir borrador', 'borrador', 'bg-slate-200');
+      if (ROLES_APROBAR.includes(r)) h += b('Aprobar', 'aprobado', 'bg-emerald-600 text-white');
+      if (ROLES_REABRIR.includes(r)) h += b('Reabrir borrador', 'borrador', 'bg-slate-200');
     }
     if (e === 'aprobado' && r === 'superadmin') h = b('Reabrir borrador', 'borrador', 'bg-slate-200');
   }
@@ -180,6 +188,3 @@ async function cambiarEstado(nuevo) {
   if (error) return alert(error.message);
   S.estado = nuevo; render();
 }
-// auth.js llama a mostrarPantallaWizard() al autorizar: se extiende para arrancar el wizard
-const _mostrarWizard = mostrarPantallaWizard;
-mostrarPantallaWizard = function () { _mostrarWizard(); initWizard(); };

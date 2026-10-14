@@ -8,6 +8,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>tailwind.config={theme:{extend:{colors:{sda:{50:'#f0f7ff',600:'#0284c7',800:'#075985',900:'#0c4a6e'}}}}}</script>
+<style>
+@keyframes tutFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.tut-fade{animation:tutFade .35s ease both}
+@keyframes tutPulso{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.55)}50%{box-shadow:0 0 0 10px rgba(56,189,248,0)}}
+.tut-pulso{animation:tutPulso 2s infinite}
+</style>
 </head>
 <body class="h-full font-sans antialiased text-slate-800">
 
@@ -24,12 +30,43 @@
   </div>
 </div>
 
+<!-- BIENVENIDA (tutorial interactivo) -->
+<div id="view-bienvenida" class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-indigo-50">
+  <header class="bg-sda-900 text-white shadow-md"><div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+    <span class="font-bold text-lg">Presupuesto IASD</span>
+    <div class="flex items-center gap-3"><div class="text-right"><div id="bv-nombre" class="text-sm font-semibold"></div><div id="bv-rol" class="text-xs text-amber-300"></div></div>
+      <button onclick="logout()" class="px-3 py-2 rounded-lg bg-sda-800 hover:bg-red-600 text-sm">Salir</button></div></div></header>
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <div class="text-center"><h1 class="text-3xl sm:text-4xl font-bold text-sda-900">Bienvenido al Presupuesto Operativo Anual</h1>
+      <p class="mt-2 text-slate-600">Un recorrido rápido por las 5 fases del sistema. Toca una fase o usa las flechas del teclado.</p></div>
+    <div id="bv-estado"></div>
+    <section id="bv-tutorial"></section>
+    <div id="bv-acciones" class="flex flex-wrap justify-center gap-3"></div>
+  </main>
+</div>
+
+<!-- ADMINISTRACIÓN DE USUARIOS (superadmin) -->
+<div id="view-admin" class="hidden min-h-screen bg-slate-50">
+  <header class="bg-sda-900 text-white shadow-md"><div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-4"><span class="font-bold text-lg">Administración de usuarios</span>
+      <button onclick="ir('view-bienvenida')" class="text-sm text-sky-200 hover:text-white">← Inicio</button>
+      <button onclick="entrarAsistente()" class="text-sm text-sky-200 hover:text-white">Asistente →</button></div>
+    <button onclick="logout()" class="px-3 py-2 rounded-lg bg-sda-800 hover:bg-red-600 text-sm">Salir</button></div></header>
+  <main class="max-w-7xl mx-auto px-4 py-6"><p class="text-sm text-slate-500 mb-4">Personas que han iniciado sesión. Da acceso a las pendientes y edita el rol o la iglesia de cualquiera.</p><div id="adm-tabla"></div></main>
+</div>
+
+<!-- Ventanas modales (pantalla oscurecida) -->
+<div id="modal-perfil" class="hidden fixed inset-0 z-[100] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"></div>
+<div id="modal-usuario" class="hidden fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"></div>
+
 <!-- WIZARD -->
 <div id="view-wizard" class="hidden min-h-screen flex-col">
   <header class="bg-sda-900 text-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <span class="font-bold text-lg">Presupuesto IASD</span>
+        <button onclick="ir('view-bienvenida')" class="text-sm text-sky-200 hover:text-white">← Inicio</button>
+        <button onclick="abrirAdmin()" class="solo-superadmin hidden text-sm text-amber-300 hover:text-white">👥 Usuarios</button>
         <select id="select-iglesia-activa" onchange="cambiarIglesia(this.value)" class="bg-sda-800 text-sm rounded-lg px-3 py-1.5 border border-sda-600"></select><select id="select-anio" onchange="cambiarAnio()" title="Año a presupuestar" class="bg-sda-800 text-sm rounded-lg px-3 py-1.5 border border-sda-600"></select>
       </div>
       <div class="flex items-center gap-3">
@@ -64,6 +101,8 @@
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/core.js"></script>
+<script src="js/bienvenida.js"></script>
+<script src="js/admin.js"></script>
 <script src="js/fase1.js"></script>
 <script src="js/fase2.js"></script>
 <script src="js/fase3.js"></script>
