@@ -25,6 +25,7 @@ function f5() {
     `<div class="mt-2">${alerta(Math.abs(c.tP - 100) < .01, `Σ Propuesta % Concilio = ${pc(c.tP)}`)}</div>` +
     (c.tG < c.tEst ? `<div class="mt-2">${alerta(false, `Total gasto estimado (${money(c.tEst)}) supera la proyección (${money(c.pry)}).`)}</div>` : ''));
   const firmas = `<section class="pt-6 border-t mt-8"><div class="grid grid-cols-2 sm:grid-cols-4 gap-8 text-center text-xs">${['Pastor Distrital', 'Tesorero', 'Primer Anciano', 'Director de Mayordomía'].map(x => `<div class="border-t border-slate-400 pt-2 mt-12"><p class="font-bold">${x}</p><p class="text-slate-500">Firma / Sello</p></div>`).join('')}</div></section>`;
+  const desglose = desgloseHTML(c);
   // Sección 5: Saldos iniciales (fuera del PDF oficial hasta confirmar)
   const D = calc3(), g = (id, k) => S.f5.sb.d[id]?.[k] || 0, tj = sum(D, x => g(x.id, 'j'));
   const s5 = sec(`Sección 5: Saldos iniciales ${N}`, `<div class="flex flex-wrap gap-4 mb-3 text-sm items-center"><label>Fecha de corte ${inp('f5.sb.fecha', S.f5.sb.fecha, 'w-32', 1)}</label><label>Saldo base a distribuir ${inp('f5.sb.base', S.f5.sb.base, 'w-32')}</label></div>` +
@@ -36,11 +37,35 @@ function f5() {
   return `<div class="flex flex-wrap gap-3 justify-between items-center border-b pb-3"><p class="text-sm text-slate-500">Resumen ejecutivo para la Junta de Iglesia y el Concilio de Mayordomía.</p>
     <div class="flex gap-3"><button onclick="exportarExcel()" class="keep px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50">📊 Descargar Excel</button>
     <button onclick="exportarPDF()" class="keep px-4 py-2 bg-sda-900 text-white rounded-lg text-sm font-semibold">📄 Exportar Reporte Oficial PDF</button></div></div>
-    <div id="reporte" class="space-y-8 bg-white p-2"><div class="text-center"><h2 class="text-xl font-bold">Presupuesto Operativo Anual ${N}</h2><p class="text-sm text-slate-600">${esc(ig)} · Iglesia Adventista del Séptimo Día</p></div>${s1}${s2}${s3}${s4}${firmas}</div>${s5}`;
+    <div id="reporte" class="space-y-8 bg-white p-2"><div class="text-center"><h2 class="text-xl font-bold">Presupuesto Operativo Anual ${N}</h2><p class="text-sm text-slate-600">${esc(ig)} · Iglesia Adventista del Séptimo Día</p></div>${s1}${s2}${s3}${s4}${firmas}${desglose}</div>${s5}`;
+}
+/** Desglose por departamento: sus actividades (Plantilla 4) y el presupuesto autorizado.
+ *  El total autorizado del departamento es la suma de los montos autorizados de sus actividades (Fase 4); el % es la Propuesta Concilio (Sección 4). */
+function desgloseDatos(c) {
+  return c.rows.map(r => {
+    const acts = S.f4.acts.filter(a => norm(a.departamento) === norm(r.nombre));
+    const filas = acts.map(a => [String(a.actividad || '').trim() || '(sin descripción)', apAct(a)]);
+    
+    
+    if (!filas.length) filas.push(['Sin actividades registradas', 0]);
+    return { nombre: r.nombre, pct: r.pctC, filas, total: r.ap };
+  });
+}
+function desgloseHTML(c) {
+  const D = desgloseDatos(c);
+  const cuerpo = D.map(d => { const n = d.filas.length + 1;
+    return `<tbody>` + d.filas.map((f, i) => `<tr class="border-t border-slate-100">${i ? '' : `<td rowspan="${n}" class="px-3 py-2 font-medium align-top">${esc(d.nombre)}</td><td rowspan="${n}" class="px-3 py-2 text-right align-top">${pc(d.pct)}</td>`}<td class="px-3 py-1.5">${esc(f[0])}</td>${td(money(f[1]))}</tr>`).join('') +
+      `<tr class="bg-slate-50 font-bold border-b border-slate-200"><td class="px-3 py-1.5">Total autorizado</td>${td(money(d.total))}</tr></tbody>`; }).join('');
+  const pie = `<tfoot><tr class="bg-slate-100 font-bold"><td class="px-3 py-2">TOTAL GENERAL</td>${td(pc(sum(D, d => d.pct)))}<td></td>${td(money(sum(D, d => d.total)))}</tr></tfoot>`;
+  const tabla5 = D.length ? `<div class="border border-slate-200 rounded-xl overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-100 text-xs uppercase text-slate-600"><tr><th class="px-3 py-2 text-left">Departamento</th><th class="px-3 py-2 text-right">% Propuesta Concilio</th><th class="px-3 py-2 text-left">Actividad</th><th class="px-3 py-2 text-right">Presupuesto autorizado</th></tr></thead>${cuerpo}${pie}</table></div>` : '<p class="text-sm text-slate-500">Aún no hay departamentos.</p>';
+  return `<div class="salto-pagina">${sec('Anexo: Desglose por departamento y actividad', tabla5)}</div>`;
+}
+function desgloseFilasExcel(c) {
+  return [['Departamento', '% Propuesta Concilio', 'Actividad', 'Presupuesto autorizado'], ...desgloseDatos(c).flatMap(d => [...d.filas.map(f => [d.nombre, d.pct, f[0], f[1]]), [d.nombre, d.pct, 'Total autorizado', d.total]])];
 }
 function exportarPDF() {
   const el = $('reporte'); el.querySelectorAll('.no-print').forEach(n => n.style.display = 'none');
-  html2pdf().set({ margin: .4, filename: `Presupuesto_${S.aN}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' } }).from(el).save()
+  html2pdf().set({ margin: .4, filename: `Presupuesto_${S.aN}.pdf`, html2canvas: { scale: 2 }, pagebreak: { mode: ['css', 'legacy'], before: '.salto-pagina', avoid: 'tr' }, jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' } }).from(el).save()
     .then(() => el.querySelectorAll('.no-print').forEach(n => n.style.display = ''));
 }
 function exportarExcel() {
@@ -49,6 +74,7 @@ function exportarExcel() {
   add('Histórico N-1', [['Mes', 'Diezmos', 'Ofrenda UF', 'Ofrenda Global', 'Ofrenda 100%', 'Ofrenda local 60%', 'Remesa 40%', 'Ing. directos', 'Ofrenda 60% mes', 'Gastos', 'Saldo'], ...calc2().m.map(r => [r.mes, r.diez, r.uf, r.ofg, r.o100, r.loc, r.rem, r.dir, r.o60, r.gas, r.sal])]);
   add('Proyección', [['Concepto', 'Anual', 'Mensual'], ['Ofrenda 60% N', c.pry, c.pry / 12], ['Gastos N', c.tG, c.tG / 12], ['Diezmos N-1', c.c2.diez, c.c2.diez / 12], ['Ofrenda 60% N-1', c.c2.o60, c.c2.o60 / 12], ['Gastos N-1', c.c2.gas, c.c2.gas / 12]]);
   add('Reestructuración', [['Departamento', '% anterior', 'Gasto estimado', '% representativo', 'Gasto por %', '% Concilio'], ...c.rows.map(r => [r.nombre, r.pct, r.est, c.tEst ? r.est / c.tEst * 100 : 0, r.gpp, r.pctC])]);
+  add('Desglose por actividad', desgloseFilasExcel(c));
   add('Saldos iniciales', [['Departamento', 'Saldo corte', 'Ajustes', 'Nuevo propuesto', '% Junta', 'Saldo aprobado'], ...calc3().map(x => { const d = S.f5.sb.d[x.id] || {}; return [x.nombre, d.c || 0, d.a || 0, (d.c || 0) - (d.a || 0), d.j || 0, S.f5.sb.base * (d.j || 0) / 100]; })]);
   XLSX.writeFile(wb, `Presupuesto_${S.aN}.xlsx`);
 }
