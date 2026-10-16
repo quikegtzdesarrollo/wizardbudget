@@ -6,7 +6,7 @@ const S = {
   f2: { m: [] },
   f3: { deps: [] },   // catálogo por iglesia (catalogo_departamentos) + valores de la Plantilla 5 (Fase 3)
   f4: { infl: 5, crec: 0, acts: [], ap: {} },    // ap: {depId: {v, c}}
-  f5: { dig: { dn: 0, on: 0, af: 0, ad: 0 }, pct: {}, sb: { base: 0, fecha: '', d: {} } }
+  f5: { dig: { dn: 0, on: 0, af: 0, ad: 0 }, pct: {}, sb: { base: '', fecha: '' } }
 };
 
 const S0 = structuredClone(S);   // estado inicial limpio (al cambiar de iglesia/año)
@@ -169,17 +169,17 @@ const cambiarIglesia = () => initWizard(), cambiarAnio = () => initWizard();
 
 /* ---------- cierre: envía a Supabase los resultados calculados para validar y materializar ---------- */
 function payloadCierre() {
-  const c = calc5(), raw = S.f2.m, sb = S.f5.sb.d;
+  const c = calc5(), raw = S.f2.m;
   const historico = calc2().m.map((r, i) => ({ mes: num(r.mes) || i + 1, diezmos: r.diez, remesa_20: r.uf * 0.2, remesa_16: r.uf * 0.16,
     remesa_4: r.uf * 0.04, remesa_ofg: r.ofg * 0.4, ofrenda_100: r.o100, ofrenda_local_60: r.loc,
     ingresos_directos: r.dir, ofrenda_60_mes: r.o60, gastos: r.gas, saldo_mensual: r.sal }));
-  const departamentos = c.rows.map(r => { const s = sb[r.id] || {};
+  const departamentos = c.rows.map(r => {
     return { departamento: r.nombre, orden: r.i, porcentaje_asignado: r.pct, ingresos: r.ing, gasto: r.gasto, gastos_miscelaneos: r.misc, ingresos_directos: r.dir,
       transf_entrantes: r.ent, transf_salientes: r.sal, saldo_final: r.sf, gasto_estimado: r.est, limite_indexado: r.lim, monto_aprobado: r.ap, comentario: r.com,
-      porcentaje_concilio: r.pctC, gasto_por_porcentaje: r.gpp, saldo_corte: s.c || 0, ajustes: s.a || 0, porcentaje_junta: s.j || 0,
-      saldo_aprobado_junta: S.f5.sb.base * (s.j || 0) / 100 }; });
+      porcentaje_concilio: r.pctC, gasto_por_porcentaje: r.gpp, saldo_corte: 0, ajustes: 0, porcentaje_junta: 0,
+      saldo_aprobado_junta: 0 }; });   // los saldos por departamento (antigua Sección 5) ya no se capturan; el saldo inicial va en resumen.saldos
   const resumen = { estadistica: stats1(), desafio_fe: S.f5.dig, proyeccion: { ofrenda60_n: c.pry, gastos_n: c.tG, total_gasto_estimado: c.tEst },
-    saldos: { base: S.f5.sb.base, fecha_corte: S.f5.sb.fecha }, inflacion: S.f4.infl, crecimiento: S.f4.crec };
+    saldos: saldoInicial(), inflacion: S.f4.infl, crecimiento: S.f4.crec };
   return { historico, departamentos, resumen };
 }
 async function cambiarEstado(nuevo) {
